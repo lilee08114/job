@@ -4,6 +4,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask_login import UserMixin, AnonymousUserMixin, current_user
 from flask import Flask, current_app
 from app.extensions import db
+from app.helper import CRUD_Model
 
 
 class User(UserMixin, db.Model):

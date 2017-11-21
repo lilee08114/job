@@ -17,6 +17,7 @@ def create_app(config=None):
 	register_mail(app)
 	register_db(app)
 	register_login_manager(app)
+	register_jinja(app)
 	return app
 
 
@@ -47,6 +48,11 @@ def register_login_manager(app):
 	def load_user(user_id):
 		return User.query.get(user_id)
 	return app
+
+def register_jinja(app):
+	static_file
+	@app.context_processor
+	pass
 
 def make_celery(app):
 	#Integrate the Flask and Celery
