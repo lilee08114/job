@@ -14,6 +14,10 @@ class GetIps():
 		#timeout: timeout parameter for urlopen, only for validate_ip method
 		self.url1 = 'http://www.xicidaili.com/'
 		self.url2 = 'http://www.ip181.com/'
+		self.url3 = ' http://www.data5u.com/'
+		self.url4 = 'http://www.66ip.cn/'
+		self.url6 = 'http://www.goubanjia.com/free/gngn/index.shtml'
+		self.url7 = 'http://www.xdaili.cn/ipagent/freeip/getFreeIps?page=1&rows=10'
 		self.test_url = 'http://www.baidu.com/'
 		self.timeout = 5
 		self.header={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
@@ -22,39 +26,23 @@ class GetIps():
 			}
 		self.ip_pool = []
 
-	def __fetch_ip(self):
-		#request the proxy ip addresses, append the validate ip to the ip_pool list
-		
+	def _open_url(self, url):
 		req = request.Request(self.url1, headers=self.header)
 		with request.urlopen(req) as f:
-			html = f.read().decode()
-		bs = BeautifulSoup(html, 'html5lib')
-		for i in bs.find_all('tr', class_='subtitle'):
-			i.decompose()
-		print (len(bs.find_all('tr')))
-		for i in bs.find_all('tr'):
-			i = str(i)
-			ip_addr = re.search('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', i)
-			if bool(ip_addr):
-				port_ = re.search('<td>(\d{1,5})<\/td>', i)
-				security = re.search('高匿|透明', i)
-				scheme_ = re.search('(?i)https|http', i)
-				ip_obj = (ip_addr.group(), port_.group(1), security.group(), scheme_.group())
-				print ('-----------?--------')
-				print (ip_obj)
-				if self.validate_ip(ip_obj) == True:
-					self.ip_pool.append(ip_obj)
-					
+			try:
+				html = f.read().decode()
+			except UnicodeDecodeError:
+				html = f.read().decode('gb2312')
+		return html
 
-	def validate_ip(self, ip_obj):
+	def _validate_ip(self, ip_obj):
 		#visit a test_url to check whether a proxy ip is alive
 		ip, port, security, scheme = ip_obj
 		if security == '透明':
 			return False
 		return True
-		
 
-	def __save(self):
+	def _save(self):
 		#write the ip addresses into db.
 		from app.myapp import app
 		with app.app_context():
@@ -67,8 +55,46 @@ class GetIps():
 					db.session.commit()
 				except:
 					db.session.rollback()
+
+	def _parse_tr_tag(self, tr_tag):
+		ip_addr = re.search('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', i)
+		if bool(ip_addr):
+			port_ = re.search('<td>(\d{1,5})<\/td>', i)
+			security = re.search('高匿|透明|普匿', i)
+			scheme_ = re.search('(?i)https|http', i)
+			ip_obj = (ip_addr.group(), port_.group(1), security.group(), scheme_.group())
+			return ip_obj
+
+
+	def _xicidaili_ip(self):
+		#get ip from xicidaili.com!	
+		html = self._open_url(self.url1)
+		bs = BeautifulSoup(html, 'html5lib')
+		for i in bs.find_all('tr', class_='subtitle'):
+			i.decompose()
+
+		for tag in bs.find_all('tr'):
+			ip_obj = self._parse_tr_tag(str(tag))
+			print ('-----------?--------')
+			print (ip_obj)
+			if ip_obj and self._validate_ip(ip_obj) == True:
+				self.ip_pool.append(ip_obj)
+		self._save()
+
+	def _ip181_ip(self):
+		html = self._open_url(self.url2)
+		bs = BeautifulSoup(html, 'html5lib')
+		title = bs.find(class_='active')
+		if title:
+			title.decompose()
+
+		for tag in bs.find_all('tr'):
+			ip_obj = self._parse_tr_tag(str(tag))
+			if self._validate_ip(ip_obj) == True:
+				self.ip_pool.append(ip_obj)
+		self._save()
 					
-			#save it !
+
 
 	def fresh_ip(self):
 		#exposed api??
