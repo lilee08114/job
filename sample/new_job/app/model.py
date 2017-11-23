@@ -7,7 +7,7 @@ from app.extensions import db
 from app.helper import CRUD_Model
 
 
-class User(UserMixin, db.Model):
+class User(UserMixin, CRUD_Model):
 	__tablename__ = 'user'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -22,6 +22,7 @@ class User(UserMixin, db.Model):
 	comments = db.relationship('Comment', back_populates='author', lazy='dynamic')
 	sub_info = db.relationship('Subscribe', back_populates='user', lazy='dynamic')
 	profile = db.relationship('Profile', back_populates='user', lazy='dynamic')
+
 
 	@property
 	def password(self):
@@ -41,10 +42,13 @@ class User(UserMixin, db.Model):
 	def decode_token(self, token):
 		s = Serializer(current_app.config['SECRET_KEY'], 600)
 		return s.loads(token)
+
+	def __repr__(self):
+		return '<object User, name: {}>'.format(self.name)
 		
 
 
-class Post(db.Model):
+class Post(CRUD_Model):
 	__tablename__ = 'post'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -57,8 +61,10 @@ class Post(db.Model):
 	author = db.relationship('User', back_populates='posts', lazy=True)
 	comment = db.relationship('Comment', back_populates='post', lazy='dynamic')
 	
+	def __repr__(self):
+		return '<object Post, id: {}>'.format(self.id)
 
-class Comment(db.Model):
+class Comment(CRUD_Model):
 	__tablename__ = 'comments'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -70,8 +76,10 @@ class Comment(db.Model):
 	post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
 	post = db.relationship('Post', back_populates='comment', lazy=True)
 
+	def __repr__(self):
+		return '<object Comment, id: {}>'.format(self.id)
 
-class Jobbrief(db.Model):
+class Jobbrief(CRUD_Model):
 	__tablename__ = 'brief'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -96,8 +104,11 @@ class Jobbrief(db.Model):
 	detail = db.relationship('Jobdetail', back_populates='abstract', lazy='dynamic')
 	sub_info = db.relationship('Subscribe', back_populates='brief')
 
+	def __repr__(self):
+		return '<object Jobbrief, id: {}, key_word: {}>'.format(self.id, self.kwy_word)
 
-class Profile(db.Model):
+
+class Profile(CRUD_Model):
 	__tablename__ = 'profile'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -108,8 +119,11 @@ class Profile(db.Model):
 
 	user = db.relationship('User', back_populates='profile')
 
+	def __repr__(self):
+		return '<object Profile, id: {}>'.format(self.id)
 
-class Assessment(db.Model):
+
+class Assessment(CRUD_Model):
 	__tablename__ = 'assess'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -118,7 +132,10 @@ class Assessment(db.Model):
 	average_salary = db.Column(db.Integer)
 	updated_time = db.Column(db.DateTime())
 
-class Jobsite(db.Model):
+	def __repr__(self):
+		return '<object Assessment, key_word: {}>'.format(self.key_word)
+
+class Jobsite(CRUD_Model):
 	__tablename__ = 'site'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -127,8 +144,10 @@ class Jobsite(db.Model):
 	
 	brief = db.relationship('Jobbrief', back_populates='job_link')
 
+	def __repr__(self):
+		return '<object Jobsite, id: {}>'.format(self.id)
 
-class Jobdetail(db.Model):
+class Jobdetail(CRUD_Model):
 	__tablename__ = 'requirement'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -137,8 +156,10 @@ class Jobdetail(db.Model):
 
 	abstract = db.relationship('Jobbrief', back_populates='detail')
 
+	def __repr__(self):
+		return '<object Jobdetail, id: {}>'.format(self.id)
 
-class Company(db.Model):
+class Company(CRUD_Model):
 	__tablename__ = 'company'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -147,7 +168,10 @@ class Company(db.Model):
 
 	job = db.relationship('Jobbrief', back_populates='company', lazy='dynamic')
 
-class Subscribe(db.Model):
+	def __repr__(self):
+		return '<object Company, company_name: {}>'.format(self.company_name)
+
+class Subscribe(CRUD_Model):
 	__tablename__ = 'subInfo'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True) 	#before
@@ -159,7 +183,11 @@ class Subscribe(db.Model):
 	brief = db.relationship('Jobbrief', back_populates='sub_info', lazy='dynamic')
 	user = db.relationship('User', back_populates='sub_info')
 
-class Ip_pool(db.Model):
+	def __repr__(self):
+		return '<object Subscribe, key_word: {}>'.format(self.sub_key)
+
+
+class Ip_pool(CRUD_Model):
 	__tablename__ = 'ips'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -174,3 +202,6 @@ class Ip_pool(db.Model):
 	qc_expire_time = db.Column(db.DateTime())
 	lg_expire_time = db.Column(db.DateTime())
 	lp_expire_time = db.Column(db.DateTime())
+
+	def __repr__(self):
+		return '<object Ip_pool, id: {}>'.format(self.id)

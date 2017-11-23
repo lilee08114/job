@@ -19,14 +19,9 @@ def forum(page=1):
 		new_post = Post(title=form.title.data,
 						post=int_to_link(post),
 						author_id=current_user.id)
-		db.session.add(new_post)
-		try:
-			db.session.commit()
-			return redirect(url_for('.forum'))
-		except:
-			db.session.rollback()
-			abort(404)
+		new_post._save()
 		
+
 	return render_template('forum.html', posts=posts, 
 							current_page=page, form=form, 
 							has_prev=paginate.has_prev,
@@ -55,8 +50,7 @@ def post(post_id):
 		new_comment = Comment(comment=form.comment.data,
 							author_id = current_user.id,
 							post_id=post_id)
-		db.session.add(new_comment)
-		db.session.commit()
+		new_comment._save()
 		return redirect(url_for('.post', post_id=post_id))
 	paginate = Comment.query.filter_by(post_id=post_id).\
 					order_by(Comment.comment_time).paginate(page=page, per_page=10)

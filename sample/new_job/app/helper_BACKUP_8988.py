@@ -19,7 +19,7 @@ class Assessment():
 
 class CRUD_Model(db.Model):
 	#here we add the CRUD functions for database
-
+<<<<<<< HEAD
 	def save(self, table=None):
 		#receive table obj and save it !what about the app_context?
 		#in crawler need app_context
@@ -27,11 +27,12 @@ class CRUD_Model(db.Model):
 			db.session.add(self)
 		else:
 			db.session.add(table)
-
+=======
 
 	def _save(self):
 		#if success return True, otherwise False
 		db.session.add(self)
+>>>>>>> 3491a55269bfd16b6852f881a288d28305baa748
 		try:
 			db.session.commit()
 			print ('save {} successfully!'.format(self))
