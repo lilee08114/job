@@ -18,12 +18,13 @@ class Assessment():
 
 class CRUD_Model(db.Model):
 	#here we add the CRUD functions for database
-	def save(self, table):
+	def save(self, table=None):
 		#receive table obj and save it !what about the app_context?
 		#in crawler need app_context
 		if table is None:
-			abort 404
-		db.session.add(table)
+			db.session.add(self)
+		else:
+			db.session.add(table)
 		try:
 			db.session.commit()
 			print ('save one job successfully!')
