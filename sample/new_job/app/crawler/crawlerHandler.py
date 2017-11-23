@@ -12,7 +12,7 @@ from .proxy_ip import GetIps
 #约定：工资有None, ‘3K以下’，‘3k-6k’，‘6k-10k’，‘10k以上’
 #约定：经验要求：None,‘无要求’，‘1-3年’，‘3年以上’
 
-class CrawlerHandler():
+class Links():
 
 	def __init__(self, keyword, exp=None, edu=None, page=1,
 				city='成都', salary=None, pub_time=None):
@@ -24,7 +24,7 @@ class CrawlerHandler():
 		self.page = page
 		self.pub_time = pub_time
 
-	def QianChengLinkGenerator(self):
+	def qianCheng(self):
 		'''generate the url with the parameters and 
 			return a instance of the 51job crawler
 		'''
@@ -54,10 +54,10 @@ class CrawlerHandler():
 				 exp_code)
 		print ('link is:',link)
 		logging.info('Searching QC MAIN: key: %s, link: %s'%(self.keyword, link))
-		return Crawler_for_51job(link, self.get_10_proxies('qc'))
+		return link
 
 
-	def liepinLinkGenerator(self):
+	def liePin(self):
 		'''generate the url with the parameters and 
 			return a instance of the liepin crawler
 		'''
@@ -77,9 +77,9 @@ class CrawlerHandler():
 				city_code, pub_time_code, salary_code, page_code)
 		print ('main link is:', link)
 		logging.info('Searching LP MAIN MAIN: key: %s, link: %s'%(self.keyword, link))
-		return Crawler_for_Liepin(link, self.get_10_proxies('lp'))
+		return link
 
-	def lagouLinkGenerator(self):
+	def laGou(self):
 		'''generate the url with the parameters and 
 			return a instance of the lagou crawler
 		'''
@@ -88,9 +88,12 @@ class CrawlerHandler():
 		keyword = self.keyword
 		link = 'https://www.lagou.com/jobs/positionAjax.json?city=%s&needAddtionalResult=false&isSchoolJob=0'%city_code
 		logging.info('Searching LG MAIN: key: %s, link: %s'%(keyword, link))
-		return Crawler_for_Lagou(link, page, keyword, self.get_10_proxies('lg'))
+		return link
 
-	def __user_agent_resources(self):
+class ProxyPool():
+
+	@classmethod
+	def _user_agent_resources(cls):
 		#user_agent list
 		user_agents = ['Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; en-us) \
 				AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50',
@@ -118,13 +121,15 @@ class CrawlerHandler():
 			]
 		return random.choices(user_agents, k=30)
 
-	def update_ip(self):
+	@classmethod
+	def update_ip(cls):
 		print ('--searching the proxy ip--')
 		search_proxy = GetIps()
 		search_proxy.fresh_ip()
 		print ('--searching ends--')
 
-	def __proxy_resources(self, site):
+	@classmethod
+	def _proxy_resources(cls, site):
 		'''input: 'qc' or 'lg' or 'lp' corresponding to each website
 		get 10 proxy ip addresses from database
 		return: a list of proxy ip addresses
@@ -134,19 +139,19 @@ class CrawlerHandler():
 				ip_obj = Ip_pool.query.filter_by(qc_status=True).all()
 				print ('----qc-%s-----'%(len(ip_obj)))
 				if len(ip_obj) < 30:
-					self.update_ip()
+					cls.update_ip()
 					ip_obj = Ip_pool.query.filter_by(qc_status=True).all()
 			elif site == 'lg':
 				ip_obj = Ip_pool.query.filter_by(lg_status=True).all()
 				print ('----lg-%s-----'%(len(ip_obj)))
 				if len(ip_obj) < 30:
-					self.update_ip()
+					cls.update_ip()
 					ip_obj = Ip_pool.query.filter_by(qc_status=True).all()
 			elif site == 'lp':
 				ip_obj = Ip_pool.query.filter_by(lp_status=True).all()
 				print ('----lp-%s-----'%(len(ip_obj)))
 				if len(ip_obj) < 30:
-					self.update_ip()
+					cls.update_ip()
 					ip_obj = Ip_pool.query.filter_by(qc_status=True).all()
 			else:
 				return None
@@ -155,7 +160,8 @@ class CrawlerHandler():
 			#return [{i.scheme : 'http://'+i.ip+':'+i.port} for i in twenty_ip]
 			return [{i.scheme : 'http://'+i.ip+':'+i.port} for i in twenty_ip] #{'http':'http://'}
 
-	def get_10_proxies(self, site):
+	@classmethod
+	def get_10_proxies(cls, site):
 		#input: 'qc' or 'lg' or 'lp' corresponding to each website
 		#return 10 proxy addresses, each one was attached with a user_agent
-		return list(zip(self.__user_agent_resources(), self.__proxy_resources(site)))
+		return list(zip(cls._user_agent_resources(), cls._proxy_resources(site)))

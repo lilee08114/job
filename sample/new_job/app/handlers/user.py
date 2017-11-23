@@ -8,7 +8,6 @@ from ..utils.send_mail import send_mail
 
 bp = Blueprint('user', __name__)
 
-
 @bp.route('/')
 def user():
 	form = LoginForm()
@@ -44,17 +43,13 @@ def regis():
 	if form.validate_on_submit():
 		new_user = User(name=form.name.data, password=form.passwd2.data,
 						mail=form.mail.data)
-		db.session.add(new_user)
-		try:
-			db.session.commit()
+		if new_user._save():
 			send_mail(new_user.mail, new_user.generate_token(), new_user.name)
 			flash ('congrats, registraion succeed! A confirm letter \
 				has been sent to your email, plz check out')
 			return redirect(request.args.get('next') or url_for('.user'))
-		except:
-			print ('in except!!!!')
-			db.session.rollback()
-			abort(404)
+		else::
+			flash ('somthing wrong, registration failed!')
 	print ('run here')
 	return render_template('user.html', form=form, reg=2)
 
@@ -65,15 +60,12 @@ def reset():
 	form = Reset()
 	if form.validate_on_submit():
 		user = current_user._get_current_object()
-		user.password = form.new2.data
-		db.session.add(user)
-		try:
-			db.session.commit()
+		if user._update(password = form.new2.data):
 			flash ('you code has been reseted')
 			return render_template(request.args.get('next') or url_for('.user'))
-		except:
-			db.session.rollback()
-			raise
+		else:
+			flash ('fail to reset your code!')
+			return redirect(url_for('.reset'))
 	return render_template('user.html', form=form, reg=3)
 
 
@@ -83,11 +75,11 @@ def confirm_mail(token):
 	dic = current_user.decode_token(token)
 	if current_user.id == dic.get('id'):
 		user = current_user._get_current_object()
-		user.confirm = True 
-		db.session.add(user)
-		db.session.commit()
-		flash('You email address has been confirmed!')
-		return redirect(request.args.get('next') or url_for('.user'))
+		if user._update(confirm = True):
+			flash('You email address has been confirmed!')
+			return redirect(request.args.get('next') or url_for('.user'))
+		else:
+			flash('Sorry, something wrong happened, please retry')
 	else:
 		abort(404)
 

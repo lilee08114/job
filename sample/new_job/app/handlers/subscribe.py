@@ -58,14 +58,7 @@ def subscribe():
 		flash('we will keep searching the relative job')
 		#在开始时写订阅相关信息入数据库，此时还缺少结束数据
 		new_sub = Subscribe(sub_key=key, sub_start=now, subscriber_id=current_user.id)
-		db.session.add(new_sub)
-		try:
-			db.session.commit()
-			logging.info('write key \"%(key)s\"\'s sub-info into db successful')
-		except:
-			logging.info('write key \"%(key)s\"\'s sub-info into db fail')
-			db.session.rollback()
-			raise
+		new_sub._save()
 		return redirect(request.args.get('next') or url_for('.subscribe')) 
 
 	return render_template('subscribe.html', form_search=form_search, form_sub=form_sub)

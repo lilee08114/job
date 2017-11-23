@@ -1,12 +1,8 @@
 import re
-import sys
-import time
 from bs4 import BeautifulSoup
 from urllib import request
 from flask import current_app
 from ..model import db, Ip_pool
-
-
 
 class GetIps():
 	#这个模块作用是接受fresh命令，然后获取20个有效的代理IP，并存储
@@ -19,7 +15,7 @@ class GetIps():
 		self.url6 = 'http://www.goubanjia.com/free/gngn/index.shtml'
 		self.url7 = 'http://www.xdaili.cn/ipagent/freeip/getFreeIps?page=1&rows=10'
 		self.test_url = 'http://www.baidu.com/'
-		self.timeout = 5
+		self.timeout = 10
 		self.header={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
 			AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
 			'Referer':'https://www.google.com/'
@@ -98,12 +94,6 @@ class GetIps():
 
 	def fresh_ip(self):
 		#exposed api??
-		self.__fetch_ip()
-		if len(self.ip_pool) > 0:
-			self.__save()
-			return True
-		else:
-			print ('---------------------------')
-			print ('didn\'t get any useful ip addrs!')
-			print ('---------------------------')
-			return False
+		#here need more proxy searching logic
+		self._xicidaili_ip()
+		self._ip181_ip()

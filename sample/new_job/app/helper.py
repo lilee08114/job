@@ -16,38 +16,32 @@ def send_mail():
 class Assessment():
 	pass
 
+
 class CRUD_Model(db.Model):
 	#here we add the CRUD functions for database
-	def save(self, table):
-		#receive table obj and save it !what about the app_context?
-		#in crawler need app_context
-		if table is None:
-			abort 404
-		db.session.add(table)
+
+	def _save(self):
+		#if success return True, otherwise False
+		db.session.add(self)
 		try:
 			db.session.commit()
-			print ('save one job successfully!')
+			print ('save {} successfully!'.format(self))
+			return True
 		except:
 			db.session.rollback()
-			print ('save one failed!')
+			print ('save {} failed!'.format(self))
+			return False
 
-	@classmethod
-	def add(cls, pk):
-		#add additional info to particular data table
-		if not isinstance(pk, int):
-			try:
-				pk = int(pk)
-			except Exception, e:
-				print ('pk shoud be a integer!')
-				print (e)
-				abort 404
-		table = cls.query.get(pk)
 
 	def delete(cls, pk):
 		table = cls.query.filter_by(criteria).first()
 
-	def update():
-		pass
+	def _update(self, **kwargs):
+
+		for k, v in  kwargs.items():
+			setattr(self, k, v)
+		return self._save()
+
 
 	def get():
 		pass
