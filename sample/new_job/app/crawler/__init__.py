@@ -1,5 +1,7 @@
 
 from celery import Task
+import jieba.analyse
+from ..model import db, User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
 
 class MyBase(Task):
 	def on_success(self, retval, task_id, args, kwargs):
@@ -169,4 +171,13 @@ class Format():
 			job_id = self.save_job(jobinfo)
 			self.save_site(job_id, jobinfo['link'])
 			return False
+
+	def save_detail_info(self, job_id, job_detail):
+		new_detail =  Jobdetail(requirement=job_detail, brief_id=job_id)
+		new_detail._save()
+
+	def extract_labels(self, sentence):
+		sentence = sentence.encode()
+		labels = jieba.analyse.extract_tags(sentence, topK=8)
+		return labels
 

@@ -102,8 +102,8 @@ class Crawler_for_Lagou(Format):
 			single_job_info['company_name'] = job_json.get("companyFullName")
 	
 			#jobinfo_without_detail.append(single_job_info)
-			is_repeated_job = self.save_raw_info(single_job_info)
-			if is_repeated_job:
+			job_already_exist = self.save_raw_info(single_job_info)
+			if job_already_exist:
 				break
 
 		#return jobinfo_without_detail

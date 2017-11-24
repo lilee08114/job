@@ -55,12 +55,12 @@ class Crawler_for_51job():
 			#time.sleep(3)
 			return self.open_url(site)
 
-	def fetchJobLink(self):
+	def job_list(self):
 		html = self.open_url(self.url)
-		print (html)
+		#print (html)
 		bs = BeautifulSoup(html, 'html5lib')
 
-		job_list = []
+		#job_list = []
 		bs.find(class_="el title").decompose()
 		for job_obj in bs.find(attrs={'id':'resultList'}).find_all(class_='el'):
 			single_job_info = {}
@@ -71,8 +71,11 @@ class Crawler_for_51job():
 			single_job_info['salary'] = str(job_obj.find(class_='t4').string)
 			single_job_info['job_location'] = str(job_obj.find(class_='t3').string)
 			single_job_info['pub_time'] = str(job_obj.find(class_='t5').string)
-			job_list.append(single_job_info)
-		return job_list
+			#job_list.append(single_job_info)
+			job_already_exist = self.save_raw_info(single_job_info)
+			if job_already_exist:
+				break
+		#return job_list
 
 
 	def jobDetail(self, jobInfo):

@@ -6,14 +6,16 @@ from urllib.error import URLError, HTTPError
 from io import BytesIO
 import gzip
 from bs4 import BeautifulSoup
+from ..model import db, User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
 
 
-class Crawler_for_Liepin():
+class Crawler_for_Liepin(Format):
 	
 	def __init__(self, url, proxy):
 		self.url = url
 		self.timeout = 5
 		self.proxy_obj = proxy
+		'''
 		self.header = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
 						'Accept-Encoding':'gzip, deflate, br',
 						'Accept-Language':'zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4',
@@ -25,7 +27,7 @@ class Crawler_for_Liepin():
 						'Upgrade-Insecure-Requests':1,
 						'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36'
 						}
-		
+		'''
 	def get_proxy(self):
 		'''pick a proxy ip randomly from 10 proxy ip addresses
 		and construct the header with random User-Agent
@@ -70,13 +72,14 @@ class Crawler_for_Liepin():
 			time.sleep(3)
 			return self.open_url(site)
 
-	def fetchJobLink(self):
+	def job_list(self):
 		'''get the job list, parse the job-relative info, and save it into db
 
 		return a list that including many dicts, each dicts stores a job's rough info
 		'''
-		information = []
-		bs = BeautifulSoup(self.open_url(self.url), 'html5lib')		
+		#information = []
+		html = self.open_url(self.url)
+		bs = BeautifulSoup(html, 'html5lib')		
 
 		for job_tag in bs.find_all('div', class_='sojob-item-main clearfix'):
 
@@ -94,10 +97,13 @@ class Crawler_for_Liepin():
 			job_info['company_site'] = job_tag.find('p', class_='company-name').find('a').get('href')
 			
 			#job_info['company_site'] = job_tag.find('p', class_='company-name').find('a')['href']
-			information.append(job_info)
+			#information.append(job_info)
+			job_already_exist = self.save_raw_info(job_info)
+			if job_already_exist:
+				break
 
-		print ('Liepin\'s search page has been parsed')
-		return information
+		#print ('Liepin\'s search page has been parsed')
+		#return information
 	
 	def check_link(self, link):
 		#check the validity of the link
@@ -108,16 +114,16 @@ class Crawler_for_Liepin():
 		else:
 			return parse.urljoin(host, path)
 
-	def jobDetail(self, job):
+	def job_detail(self, job_id, job_link):
 		'''base on the given job links, save the detail requirments it into db
 
 		param:
-		job: type:dict, rough info collection of one job, the dict must containing
-			job's link, id, exp
+		job_id: job's raw info id
+		job_link: job's detail info link
 		'''
 		time.sleep(3)
 		job_requirement = []
-		url = self.check_link(job['link'])
+		url = self.check_link(job_link)
 		logging.info('Searching LP DETL: key: %s, link: %s'%(job['key'], url))
 
 		bs = BeautifulSoup(self.open_url(url), 'html5lib')
@@ -126,10 +132,17 @@ class Crawler_for_Liepin():
 			result = bs.find(class_='content content-word').strings
 		except AttributeError:
 			result = bs.find(class_='job-info-content').strings
+		except Exception, e:
+			result = ['Sorry, failed to fetch the contents, URL is {}'.format(url)]
+
 		for i in result:
 			job_requirement.append(str(i))
-		job['job_requirement'] = job_requirement
+		requirement = ' '.join(job_requirement)
+		self.save_detail_info(job_id, requirement)
 		
+		job = Jobbrief.query.get(job_id)
+		labels = self.extract_labels(requirement)
+		job._update(job_labels=', '.join(labels))
 		return job
 '''
 url = 'https://www.liepin.com/zhaopin?pubTime=3&dqs=280020&salary=10$15&compscale=&key=Python'
