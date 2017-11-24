@@ -139,7 +139,7 @@ class Crawler_for_Liepin(Format):
 			job_requirement.append(str(i))
 		requirement = ' '.join(job_requirement)
 		self.save_detail_info(job_id, requirement)
-		
+	
 		job = Jobbrief.query.get(job_id)
 		labels = self.extract_labels(requirement)
 		job._update(job_labels=', '.join(labels))

@@ -5,6 +5,7 @@ import random
 from urllib import request, parse
 from urllib.error import URLError, HTTPError
 from bs4 import BeautifulSoup
+from ..model import db, User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
 
 
 class Crawler_for_51job():
@@ -15,6 +16,7 @@ class Crawler_for_51job():
 		self.ref = 'http://search.51job.com/list/090200,090200,0000,9,9,99,python,2,1.html?'		
 		self.url = url
 		self.timeout = 5
+		'''
 		self.header = {'User-Agent':self.agent, 
 					   'Referer':self.ref,
 					   'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -23,7 +25,7 @@ class Crawler_for_51job():
 					   'Host':'jobs.51job.com'
 					    }
 		#self.request = urllib.request(self.url, None,self.header)
-
+		'''
 	def get_proxy(self):
 		user_agent, proxy = random.choice(self.proxy_obj)
 		header = {'User-Agent':user_agent,
@@ -78,7 +80,7 @@ class Crawler_for_51job():
 		#return job_list
 
 
-	def jobDetail(self, jobInfo):
+	def job_detail(self, job_id, job_link):
 		''' return a list consisting many dicts that contain 
 			the job information(e.g: salary, experience request, 
 			work location etc.) ,and will pause for seconds between 
@@ -86,15 +88,15 @@ class Crawler_for_51job():
 			the web manager.
 		'''
 		#time.sleep(3)
-		logging.info('Searching QC DETL: key: %s, link: %s'%(jobInfo['key'], jobInfo['link']))
-		html = self.open_url(jobInfo['link'])
-		print (html)
+		#logging.info('Searching QC DETL: key: %s, link: %s'%(jobInfo['key'], jobInfo['link']))
+		html = self.open_url(job_link)
+		#print (html)
 		bs = BeautifulSoup(html, 'html5lib')
 			
-		jobInfo['exp'] = str(bs.find(class_='i1').next_sibling) if bs.find(class_='i1') else None
-		jobInfo['edu'] = str(bs.find(class_='i2').next_sibling)	if bs.find(class_='i2') else None
-		jobInfo['quantity'] = str(bs.find(class_='i3').next_sibling) if bs.find(class_='i3') else None
-		jobInfo['other_requirement'] = str(bs.find(class_='i5').next_sibling) if \
+		exp = str(bs.find(class_='i1').next_sibling) if bs.find(class_='i1') else None
+		edu = str(bs.find(class_='i2').next_sibling)	if bs.find(class_='i2') else None
+		quantity = str(bs.find(class_='i3').next_sibling) if bs.find(class_='i3') else None
+		other_requirement = str(bs.find(class_='i5').next_sibling) if \
 										bs.find(class_='i5') else None
 
 		job_description = []
@@ -104,16 +106,19 @@ class Crawler_for_51job():
 			job_description.append(info)
 		jobInfo['job_requirement'] = job_description
 
+		requirement = ', '.join(job_description)
+		self.save_detail_info(job_id, requirement)
+
+		labels = self.extract_labels(requirement)
+		job = Jobbrief.query.get(job_id)
+		job._update(job_labels=', '.join(labels),
+					job_exp=self.exp_format(exp), 
+					job_edu=edu, 
+					job_quantity=quantity,
+					job_other_require=other_requirement
+					)
+
 		return jobInfo
 
-'''			
-url = r'http://search.51job.com/list/090200,090200,0000,00,9,99,python,2,1.html?'
-a = Crawler_for_51job(url)
-out_url = r'C:\works\crawler\end.txt'
-print ('start...')
-with open(out_url, 'a') as c:
-	c.write(str(a.jobDetail()))
-print ('end')
-'''
 
 

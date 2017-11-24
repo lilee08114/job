@@ -134,7 +134,7 @@ class Format():
 						job_labels=',\n'.join(jobinfo.get('job_labels')) if \
 										jobinfo.get('job_labels') is not None else None,
 						company=jobinfo['company_name'],
-						job_exp = exp_format(jobinfo.get('exp'))
+						job_exp = self.exp_format(jobinfo.get('exp'))
 						)
 		return new_job._save()
 
@@ -150,8 +150,8 @@ class Format():
 		jobinfo['salary'] = self.salary_format(jobinfo['salary'])
 		jobinfo['pub_time'] = self.pub_time_format(jobinfo['pub_time'])
 
-		check = self.info_check(formatted_salary, jobinfo['company_name'],
-									jobinfo['job_name'], formatted_pub_time)	
+		check = self.info_check(jobinfo['salary'], jobinfo['company_name'],
+									jobinfo['job_name'], jobinfo['pub_time'])	
 		if check == 'end':
 			#no more new job, stop searching
 			return True

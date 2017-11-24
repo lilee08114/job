@@ -8,6 +8,9 @@ from ..crawler.store import fetch_Store
 from ..forms.sub import SubSearch, SubSub
 from ..model import db, Jobbrief, Jobdetail, Company, Jobsite, User, Subscribe
 from ..decorator import check_confirm_state
+from ?? import Links
+
+from crawler.proxy_pool import ProxyPool
 
 
 bp = Blueprint('subscribe', __name__)
@@ -20,7 +23,17 @@ def subscribe():
 	form_search = SubSearch()
 	form_sub = SubSub()
 	if form_search.validate_on_submit():
-		key = form_search.key.data
+		key_word = form_search.key.data
+		link = Links(key_word)				#there could be more filter conditions
+		qc_link = link.qianCheng()
+		lp_link = link.liePin()
+		lg_link = link.laGou()
+		qc_proxy = ProxyPool.get_30_proxies('qc')
+		lp_proxy = ProxyPool.get_30_proxies('lp')
+		lg_proxy = ProxyPool.get_30_proxies('lg')
+
+
+
 		#这里也不能直接传输实例，因为不能序列化，所以传输类本身，这样才能序列话，将实例作为参数传输
 		ins = fetch_Store(key)
 		# dmap方法会调整几个参数的位置，并将事先在detail里面传入1个ins参数，然后将raw获得列表传入detail

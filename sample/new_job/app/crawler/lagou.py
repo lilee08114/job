@@ -110,13 +110,13 @@ class Crawler_for_Lagou(Format):
 
 		
 
-	def job_detail(self, job_link):
+	def job_detail(self, job_id, job_link):
 		
 		time.sleep(2)
-		print ('Searching link:',job_link)
+
 		x = gzip.GzipFile(fileobj=BytesIO(self.open_url(job_link)))
-		hm = x.read().decode()
-		bs = BeautifulSoup(hm, 'html5lib')
+		html = x.read().decode()
+		bs = BeautifulSoup(html, 'html5lib')
 		job_requirement = []
 		job_labels = []
 		for label in bs.find_all(class_='labels'):
@@ -124,8 +124,10 @@ class Crawler_for_Lagou(Format):
 		for requirement in bs.find('dd', class_='job_bt').stripped_strings:
 			job_requirement.append(requirement)
 
-		job['job_labels'] = job_labels
-		job['job_requirement'] = job_requirement
+		requirement = ' '.join(job_requirement)
+		self.save_detail_info(job_id, requirement)
+		job = Jobbrief.query.get(job_id)
+		job._update(job_labels=', '.join(job_labels))
 
 		return job
 
