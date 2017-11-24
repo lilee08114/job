@@ -35,7 +35,10 @@ class CRUD_Model(db.Model):
 		try:
 			db.session.commit()
 			print ('save {} successfully!'.format(self))
-			return True
+			print ('--------LOOK THE TABLE ID----------')
+			print (self.id)
+			print ('--------LOOK THE TABLE ID  END----------')
+			return self.id
 		except:
 			db.session.rollback()
 			print ('save {} failed!'.format(self))

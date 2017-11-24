@@ -10,8 +10,9 @@ from urllib.error import URLError, HTTPError
 from flask import current_app
 from bs4 import BeautifulSoup
 from .proxy_ip import GetIps
+from ..model import db, User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
 
-class Crawler_for_Lagou():
+class Crawler_for_Lagou(Format):
 
 	def __init__(self, url, page, keyword, proxy):
 		'''on lagou site, the keyword should be posted to its host rather than
@@ -81,12 +82,11 @@ class Crawler_for_Lagou():
 			return self.open_url(site)
 		 
 
-	def fetchJobLink(self):
+	def job_list(self):
 		'''fetch the jon list, and parse and save rough infos about each job.
-
 		return a list containg many dicts, each dict store infos of one job 
 		'''
-		jobinfo_without_detail = []
+		#jobinfo_without_detail = []
 
 		html = json.loads(self.open_url(self.url, self.data))
 		for job_json in html['content']["positionResult"]["result"]:
@@ -101,21 +101,21 @@ class Crawler_for_Lagou():
 			single_job_info['exp'] = job_json.get("workYear")
 			single_job_info['company_name'] = job_json.get("companyFullName")
 	
-			jobinfo_without_detail.append(single_job_info)
-		return jobinfo_without_detail
+			#jobinfo_without_detail.append(single_job_info)
+			is_repeated_job = self.save_raw_info(single_job_info)
+			if is_repeated_job:
+				break
+
+		#return jobinfo_without_detail
 
 		
 
-	def jobDetail(self, job):
+	def job_detail(self, job_link):
 		
 		time.sleep(2)
-		job_link = job['link'] 
 		print ('Searching link:',job_link)
-		logging.info('Searching LG DETL: key: %s, link: %s'%(job['key'], job_link))
-
 		x = gzip.GzipFile(fileobj=BytesIO(self.open_url(job_link)))
 		hm = x.read().decode()
-
 		bs = BeautifulSoup(hm, 'html5lib')
 		job_requirement = []
 		job_labels = []

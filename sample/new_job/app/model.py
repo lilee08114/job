@@ -94,6 +94,8 @@ class Jobbrief(CRUD_Model):
 	job_time = db.Column(db.DateTime())
 	job_other_require = db.Column(db.String(50))
 	job_labels = db.Column(db.Text())
+	have_detail = db.Column(db.Boolean(), default=False)
+	company = db.Column(db.String(50))
 
 	company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
 	#下面这一个，在实际存储中，应当注意，在订阅中需要，非订阅中不需要, 每次对结果的存贮都需要判断
