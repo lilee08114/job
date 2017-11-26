@@ -1,12 +1,39 @@
-
+from datetime import datetime
 from celery import Task
 import jieba.analyse
 from ..model import db, User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
 
 class MyBase(Task):
-	def on_success(self, retval, task_id, args, kwargs):
-		#在任务结束时更改时间
 
+
+	def links_filter(self, links, identifier):
+		pass
+
+
+	def on_success(self, retval, task_id, args, kwargs):
+		#从数据库里拿出have_detail为False的数据，筛选，启动相应的详情抓取爬虫 
+		#根据identifier来决定从数据库刷选那些网站的链接来进行详情抓取
+
+		jobs_without_detail = Jobbrief.query.filter_by(have_detail=False).all()
+		#获取每个工作的link和id，不使用外键
+		links = [(ids, Jobsite.query.get(ids).site) for ids in jobs_without_detail]
+		identifier = kwargs.get('identifier')
+		links = self.links_filter(links, identifier)
+		ins = args[0]
+		for link in links:
+			if identifier == 'qc':
+				ins.qc_detail.aplly_async((link[0], link[1]))
+			elif identifier == 'lp':
+				ins.lp_detail.aplly_async((link[0], link[1]))
+			elif identifier == 'lg':
+				ins.lg_detail.aplly_async((link[0], link[1]))
+		#根据subscribe来决定是否写入subcribe数据库记录
+		is_subscribe = args[1]
+		if is_subscribe:
+			keyword = ins.keyword
+			subscribe = Subscribe.query.filter_by(sub_key=keyword).first()
+			if subscribe:
+				subscribe._update(sub_end=datetime.now())
 
 
 
@@ -175,6 +202,9 @@ class Format():
 	def save_detail_info(self, job_id, job_detail):
 		new_detail =  Jobdetail(requirement=job_detail, brief_id=job_id)
 		new_detail._save()
+		job = Jobbrief.query.get(job_id)
+		if job:
+			job._update(have_detail=True)
 
 	def extract_labels(self, sentence):
 		sentence = sentence.encode()
