@@ -3,37 +3,50 @@ from celery import Task
 import jieba.analyse
 from ..model import db, User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
 
-class MyBase(Task):
+class whenFinishCrawlDetail(Task):
 
-
-	def links_filter(self, links, identifier):
-		pass
-
+	def links_filter(self, identifier):
+		#[(1,'www....', (2,'wwww....'))]
+		jobs_without_detail = Jobsite.query.filter_by(have_detail=False).all()
+		#获取每个工作的link和id，不使用外键
+		id_and_link = [(job.brief_id, job.site) for job in jobs_without_detail]
+		return [link for link in id_and_link if identifier in link[1]]
 
 	def on_success(self, retval, task_id, args, kwargs):
 		#从数据库里拿出have_detail为False的数据，筛选，启动相应的详情抓取爬虫 
 		#根据identifier来决定从数据库刷选那些网站的链接来进行详情抓取
-
-		jobs_without_detail = Jobbrief.query.filter_by(have_detail=False).all()
-		#获取每个工作的link和id，不使用外键
-		links = [(ids, Jobsite.query.get(ids).site) for ids in jobs_without_detail]
 		identifier = kwargs.get('identifier')
-		links = self.links_filter(links, identifier)
-		ins = args[0]
+
+		links = self.links_filter(identifier)
+		ins = args[0]  #???
+		is_subscribe = args[1]
 		for link in links:
 			if identifier == 'qc':
-				ins.qc_detail.aplly_async((link[0], link[1]))
+				ins.qc_detail.aplly_async((link[0], link[1], is_subscribe))
 			elif identifier == 'lp':
-				ins.lp_detail.aplly_async((link[0], link[1]))
+				ins.lp_detail.aplly_async((link[0], link[1], is_subscribe))
 			elif identifier == 'lg':
-				ins.lg_detail.aplly_async((link[0], link[1]))
+				ins.lg_detail.aplly_async((link[0], link[1], is_subscribe))
+		
+		
+
+class whenFinishUpdateDetail(Task):
+
+	def on_success(self, retval, task_id, args, kwargs):
+		ins = args[0]
+		brief_id = args[1]
+		
+		job_link = Jobsite.query.filter_by(brief_id=brief_id).first()
+		if job_link:
+			job_link._update(have_detail=True)
 		#根据subscribe来决定是否写入subcribe数据库记录
-		is_subscribe = args[1]
+		is_subscribe = args[3]
 		if is_subscribe:
-			keyword = ins.keyword
-			subscribe = Subscribe.query.filter_by(sub_key=keyword).first()
+			key_word = ins.key_word
+			subscribe = Subscribe.query.filter_by(sub_key=key_word).first()
 			if subscribe:
 				subscribe._update(sub_end=datetime.now())
+
 
 
 
@@ -185,7 +198,7 @@ class Format():
 		elif check == 'repeated job':
 			#this is a repeated job, so just save the website
 			job_id = Jobbrief.query.filter_by(job_name=jobinfo['job_name'], 
-				job_salary_low=formatted_salary[0], job_salary_high=formatted_salary[1]).\
+				job_salary_low=jobinfo['salary'][0], job_salary_high=jobinfo['salary'][1]).\
 				join(Jobbrief.company).filter_by(company_name=jobinfo['company_name']).\
 				first().id
 			site = Jobsite(brief_id=int(job_id), site=jobinfo['link'])
@@ -202,9 +215,7 @@ class Format():
 	def save_detail_info(self, job_id, job_detail):
 		new_detail =  Jobdetail(requirement=job_detail, brief_id=job_id)
 		new_detail._save()
-		job = Jobbrief.query.get(job_id)
-		if job:
-			job._update(have_detail=True)
+		
 
 	def extract_labels(self, sentence):
 		sentence = sentence.encode()

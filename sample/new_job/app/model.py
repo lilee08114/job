@@ -94,7 +94,6 @@ class Jobbrief(CRUD_Model):
 	job_time = db.Column(db.DateTime())
 	job_other_require = db.Column(db.String(50))
 	job_labels = db.Column(db.Text())
-	have_detail = db.Column(db.Boolean(), default=False)
 	company = db.Column(db.String(50))
 
 	company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
@@ -142,6 +141,7 @@ class Jobsite(CRUD_Model):
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
 	site = db.Column(db.String(100))
+	have_detail = db.Column(db.Boolean(), default=False)
 	brief_id = db.Column(db.Integer, db.ForeignKey('brief.id'))
 	
 	brief = db.relationship('Jobbrief', back_populates='job_link')
@@ -154,6 +154,7 @@ class Jobdetail(CRUD_Model):
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
 	requirement = db.Column(db.Text())
+
 	brief_id = db.Column(db.Integer, db.ForeignKey('brief.id'))
 
 	abstract = db.relationship('Jobbrief', back_populates='detail')

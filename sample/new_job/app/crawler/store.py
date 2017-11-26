@@ -8,7 +8,7 @@ import jieba.analyse
 from .crawlerHandler import Links
 from ..model import db, User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
 from app.celery import ce
-from . import Format ,MyBase
+from . import Format ,whenFinishCrawlDetail, whenFinishUpdateDetail
 from lagou import Crawler_for_Lagou
 from liepin import Crawler_for_Liepin
 from qiancheng import Crawler_for_51job
@@ -32,35 +32,37 @@ class Crawler():
 		self.lp = Crawler_for_Liepin(link.liePin(), self.proxy)
 		self.lg = Crawler_for_Lagou(link.laGou(), self.proxy)
 
-	def Start(self, ins, subscribe=False):
-		pass
+	def Start(self, subscribe=False):
+		self.qc_list.aplly_async(subscribe)
+		self.lp_list.apply_async(subscribe)
+		self.lg_list.apply_async(subscribe)
 
 
-	@ce.task(base=MyBase)
+	@ce.task(base=whenFinishCrawlDetail)
 	def qc_list(self, subscribe, identifier='qc'):
 		#qc = Crawler_for_51job(self.qc_link, self.proxy)
 		self.qc.job_list()
 
-	@ce.task(base=MyBase)
+	@ce.task(base=whenFinishCrawlDetail)
 	def lp_list(self, subscribe, identifier='lp'):
 		#lp = Crawler_for_Liepin(self.lp_link, self.proxy)
 		self.lp.job_list()
 
-	@ce.task(base=MyBase)
+	@ce.task(base=whenFinishCrawlDetail)
 	def lg_list(self, subscribe, identifier='lg'):
 		#lg = Crawler_for_Lagou(self.lp_link, self.proxy)
 		self.lg.job_list()
 
-	@ce.task 
-	def qc_detail(self, job_id, job_link):
+	@ce.task(base=whenFinishUpdateDetail)
+	def qc_detail(self, job_id, job_link, subscribe):
 		self.qc.job_detail(job_id, job_link)
 
-	@ce.task 
-	def lp_detail(self, job_id, job_link):
+	@ce.task(base=whenFinishUpdateDetail)
+	def lp_detail(self, job_id, job_link, subscribe):
 		self.lp.job_detail(job_id, job_link)
 
-	@ce.task 
-	def lg_detail(self, job_id, job_link):
+	@ce.task(base=whenFinishUpdateDetail)
+	def lg_detail(self, job_id, job_link, subscribe):
 		self.lg.job_detail(job_id, job_link)
 
 
