@@ -36,8 +36,7 @@ def subscribe():
 		#由客户端输入时间限制，有3天，7天选项，如果后面有其他的调整，可以在这调整
 		key_word = form_sub.subkey.data
 		ins = Crawler(key_word)
-		ins.Start(subscribe=True)
-
+		ins.Start(subscribe=True, days=form_sub.time_limit.data)
 
 		#在开始时写订阅相关信息入数据库，此时还缺少结束数据
 		new_sub = Subscribe(sub_key=key_word, subscriber_id=current_user.id)
@@ -48,7 +47,9 @@ def subscribe():
 
 	return render_template('subscribe.html', form_search=form_search, form_sub=form_sub)
 
+
 def period_format(days):
+	'''
 	now = datetime.now()
 	countdown = 5*60*60
 	period_list = []
@@ -74,3 +75,9 @@ def period_format(days):
 
 	else:
 		return period_list
+	'''
+	ct = 5*60*60
+	if days==3:
+		return [ct]*(3*24//5)
+	else:
+		return []

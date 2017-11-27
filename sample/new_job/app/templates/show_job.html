@@ -1,0 +1,56 @@
+{%extends 'base.html'%}
+{%block content%}
+	{%import '_home_page.html' as macros%}
+	<br>
+	<div class="container text-center">
+	<div class="bg-primary row input-md">
+		<div class="col-md-6"><h4 color="white">当前词Current Key:{{key}}</h4></div>
+		<div class="col-md-6"> 
+			<div class="row">
+				<form method="post" role="form" class="form-horizontal">
+					<input type="text" name="key_word">
+					<input type="submit" value="Submit">
+				</form>
+			</div>
+		</div>
+	</div>
+		<div>
+		{%for i in get_flashed_messages()%}
+		{{i}}
+		{%endfor%}
+		<table class="table table-hover">
+			<thead>
+				<tr>
+				<th class="text-center">Work</th>
+				<th class="text-center">Location</th>
+				<th class="text-center">Salary</th>
+				<th class="text-center">Exp</th>
+				<th class="text-center">Edu</th>
+				<th class="text-center">Quantity</th>
+				<th class="text-center">Pub_Time</th>
+				<th class="text-center">Recommended</th>
+				<th class="text-center">Labels</th>
+				<th class="text-center">Detail</th>
+				</tr>
+			</thead>
+			<tbody>
+				{%for i in paginate.items%}
+				<tr><p hidden>{{i.id}}</p>
+					<td>{{i.job_name}}</td><td>{{i.job_location}}</td>
+					<td>{{i.job_salary_low}}-{{i.job_salary_high}}</td>
+					<td>{{i.job_exp}}</td><td>{{i.job_edu}}</td>
+					<td>{{i.job_quantity}}</td><td>{{i.job_time}}</td>
+					<td>W-T-F</td>
+					<td>{{i.job_labels}}</td>
+					<!--href={{i.job_link.first().site}}-->
+					<td><a href={{url_for('.detail', job_id=i.id)}}><img src="{{url_for('static', filename='images/link.png')}}" width="25" height="10"></a></td>	
+				</tr>
+				{%endfor%}
+				
+			</tbody>
+		</table>
+		{{macros.render_pagination(paginate, 'front.home', key)}}
+	</div>
+	</div>
+
+{%endblock%}

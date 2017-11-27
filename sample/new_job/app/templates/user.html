@@ -1,0 +1,50 @@
+{%extends 'base.html'%}
+{%import 'bootstrap/wtf.html' as wtf%}
+{%block content%}
+<head>
+	<title>Profile</title>
+</head>
+<body>
+	{%if current_user.is_authenticated%}
+	<div class="jumbotron container">
+		<h1>Welcome back, {{current_user.name}}</h1>
+	</div>
+	{%else%}
+	<div class="container">
+		<br>
+		<div class="jumbotron">
+			<h3>Some thing would happen!</h3>
+		</div>
+		<div class="col-md-6 text-right text-justify">
+			<h1>This is news section！</h1>
+		</div>
+		<div class="col-md-6 img-rounded" style="background-color: white">
+		{%if reg==1%}
+			<form method="post" action="{{url_for('user.login')}}">
+				<br>
+				<h1>Login</h1>
+				{{wtf.quick_form(form)}}<br>
+				<p>don't yet have an account? you can <a href="{{url_for('user.regis')}}">register</a></p>
+				{%for message in get_flashed_messages()%}
+					<div class="alert alert-warning container">
+						{{message}}
+					</div>
+				{%endfor%}
+				<br>
+			</form>
+		{%elif reg==2%}
+			<form method="post" action="">
+				<h1>Register</h1>
+				{{wtf.quick_form(form)}}<br>
+			</form>
+		{%elif reg==3%}
+			<form method="post" action="">
+				<h1>Reset Code</h1>
+				{{wtf.quick_form(form)}}
+			</form>
+		{%endif%}
+		</div>
+	</div>
+	{%endif%}
+</body>
+{%endblock%}

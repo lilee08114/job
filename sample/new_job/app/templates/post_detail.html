@@ -1,0 +1,28 @@
+{%extends 'base.html'%}
+{%import 'bootstrap/wtf.html' as wtf%}
+{%block content%}
+		{%import '_paginate.html' as macros%}
+			<div class="container">	
+				<div class="col-lg-3"></div>
+				<div class="col-lg-6">
+						<div >
+								<p class="text-left">{{post.author.name}}</p>	
+								<p class="text-right">	{{post.post_time}}</p>
+								<h1>{{post.title}}</h1>
+								<h3>	{{post.post|safe}}</h3>
+								<hr>
+								<p>	comments:</p>
+								{%for comment in comments%}
+										
+										<p>{{comment.author.name}}: {{comment.comment}}</p><br>
+								{%endfor%}<br>
+								
+								{{macros.render_pagination(paginate, 'forum.post', post.id)}}
+								<form method='post'>
+									{{wtf.quick_form(form)}}
+								</form>
+						</div>
+				</div>
+				<div class="col-lg-3"></div>
+			</div>
+{%endblock%}

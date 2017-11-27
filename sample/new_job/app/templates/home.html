@@ -1,0 +1,56 @@
+<{%extends 'base.html'%}
+{%import 'bootstrap/wtf.html' as wtf%}
+
+{%block body%}
+<div style="padding: 100px 100px 10px;" class="container">
+		
+	<div class="jumbotron">
+			<h1 class="text-center"> Welcome to Stoya, A job collector!</h1>
+			<p class="small text-center">The agile and brilliant crawler is ready for you!</p>
+		
+		
+		<form method="get" action="">
+		<div class="row text-center">
+		<div class="col-md-1"></div>
+		<div class="col-md-7">
+		<input class="form-control input-lg" type="text" name="key_word" placeholder="enter your wishes!"></div>
+		
+        <div class="col-md-3">
+        	<input type="submit" class="btn btn-primary btn-lg"  value=GO! >
+        </div>
+        <div class="col-md-1"></div>
+		</div>	
+		
+		</form>
+			
+		
+		{%for message in get_flashed_messages()%}
+		<div class="alert alert-warning container">
+		{{message}}
+		</div>
+		{%endfor%}
+		</div>
+	</div>
+		
+		<div>
+			<span class="label label-default">default label</span>
+			<span class="label label-primary">main label</span>
+			<span class="label label-success">success label</span>
+			<span class="label label-info">info label</span>
+			<span class="label label-warning">warn label</span>
+			<span class="label label-danger">danger label</span>
+		</dv>
+		<div class="alert alert-danger">Notice !</div>
+		
+		
+			
+	<ul class="pager">
+   		<li class="previous"><a href="#">&larr; Previous</a></li>
+    	<li class="next"><a href="#">Next &rarr;</a></li>
+	</ul>
+	
+		</div>
+		</div>
+	
+</div>
+{%endblock%}

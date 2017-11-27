@@ -32,14 +32,37 @@ class Crawler():
 		self.lp = Crawler_for_Liepin(link.liePin(), self.proxy)
 		self.lg = Crawler_for_Lagou(link.laGou(), self.proxy)
 
-	def Start(self, subscribe=False):
-		self.qc_list.aplly_async(subscribe)
-		self.lp_list.apply_async(subscribe)
-		self.lg_list.apply_async(subscribe)
+	def subsequent_tasks(self, days, interval):
+		#根据间隔的天数获取任务的countdown数列，据此生成后续的所有任务对象
+		#以list形式返回
+		ct = []
+		ct_time = interval
+		while ct_time < days*24*60*60:
+			ct.append(ct_time)
+			ct_time += intervalu.01`qc
+
+		subsequent_qc = [self.qc_list.apply_async((True,), countdown=i) for i in ct]
+		subsequent_lp = [self.lp_list.apply_async((True,), countdown=i) for i in ct]
+		subsequent_lg = [self.lg_list.apply_async((True,), countdown=i) for i in ct]
+		return (subsequent_qc, subsequent_lp, subsequent_lg)
+
+	def Start(self, subscribe=False, days=3, interval=5*60*60):
+		#link决定是否有后续的任务
+		#如果有subscribe，则有link任务，link任务中带有countdown参数
+		#z这里的subscribe主要是决定在详情抓取任务完成后是否更新subscirbe数据库信息
+		subseq_qc, subseq_lp, subseq_lg = None
+		if subscribe:
+			subseq_qc, subseq_lp, subseq_lg = self.subsequent_tasks(days, interval)
+
+		self.qc_list.aplly_async((subscribe), link=subseq_qc)
+		self.lp_list.apply_async((subscribe), link=subseq_lp)
+		self.lg_list.apply_async((subscribe), link=subseq_lg)
 
 
 	@ce.task(base=whenFinishCrawlDetail)
 	def qc_list(self, subscribe, identifier='qc'):
+		#identifier 主要是决定在on_success回调函数中，调用哪一个网站的抓取程序
+		#当QC完成，应当更具identifier来调用QC的详情抓取
 		#qc = Crawler_for_51job(self.qc_link, self.proxy)
 		self.qc.job_list()
 
@@ -55,6 +78,8 @@ class Crawler():
 
 	@ce.task(base=whenFinishUpdateDetail)
 	def qc_detail(self, job_id, job_link, subscribe):
+		#subscribe决定是否在on_success回调中更新subscribe信息
+		#job_id在保存时需要
 		self.qc.job_detail(job_id, job_link)
 
 	@ce.task(base=whenFinishUpdateDetail)

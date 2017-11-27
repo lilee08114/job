@@ -1,0 +1,57 @@
+{%extends 'base.html'%}
+{%block content%}
+	<div class="container text-center " >
+	<div class="jumbotron" style="background-color:Tomato;">
+		<div class="container text-left">
+		
+		
+			<h3>from keyword:&nbsp;{{job.key_word}}&nbsp;&nbsp;&nbsp;&nbsp; work No.:#{{job.id}}</h3>
+		
+		
+			<h3>name:&nbsp;{{job.job_name}}</h3>
+		
+		
+			<h3>location:&nbsp;{{job.job_location}}</h3>
+		
+	
+		
+		
+			<h3>salary:&nbsp;{{job.job_salary_low}}-{{job.job_salary_high}}</h3>
+		
+			
+			<h3>exp:{{job.job_exp}} &nbsp;&nbsp;&nbsp;&nbsp; edu:{{job.job_edu}}&nbsp;&nbsp; &nbsp;&nbsp;  quantity:{{job.job_quantity}}</h3>
+		
+		
+			<h3></h3>
+		
+
+		
+			<h3></h3>
+		
+		
+			<h3>pub_time:&nbsp;{{job.job_time}}</h3>
+		
+		
+		
+		
+			<h3>special requirement:&nbsp;{{job.job_other_require}}</h3>
+		
+		
+			<h3>labels:&nbsp;{{job.job_labels}}</h3>
+	
+		
+			<h3>company:&nbsp;{{job.company.company_name}}</h3>
+			
+			<h3>company_site:&nbsp;{{job.company.company_site}}</h3>
+			
+		</div><br>
+		<div class="container">
+			<div class="jumbotron text-left">
+				<h2 style="color:black">Requirement:</h2>
+				
+				<p style="color:black">{{detail}}</p>
+				
+			</div>
+	</div>
+</div>
+{%endblock%}

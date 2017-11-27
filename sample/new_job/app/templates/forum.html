@@ -1,0 +1,35 @@
+{%extends 'base.html'%}
+{%import 'bootstrap/wtf.html' as wtf%}
+{%block body%}
+<div class="container-flush">
+	<div class="col-lg-3"></div>
+	<div class="col-lg-6">
+		{%for post in posts%}
+			<h2><a href="{{url_for('forum.post',post_id=post.id)}}">{{post.title}}</a></h2>
+			<p>{{post.post}}</p>
+			<p class="small">{{post.labels}}--{{post.author.name}}--{{post.post_time}}</p><br>
+		{%endfor%}
+		<ul class="pager">
+		{%if has_prev%}
+   		<li class="previous"><a href="{{url_for('forum.forum',page=current_page-1)}}">&larr; Previous</a></li>
+   		{%else%}
+   		<li class="disabled previous"><a href="#">&larr; Previous</a></li>
+   		{%endif%}
+   		{%if has_next%}
+    	<li class="next"><a href="{{url_for('forum.forum',page=current_page+1)}}">Next &rarr;</a></li>
+    	{%else%}
+    	<li class="disabled next"><a href="#">Next &rarr;</a></li>
+    	{%endif%}
+		</ul>
+		{%if current_user.is_authenticated%}
+		<form method='post'">
+			{{wtf.quick_form(form)}}
+		</form>
+		{%else%}
+		<div >
+		<h2>Sorry, You should, <a href="{{url_for('user.login')}}">login</a> before post your thought </h2><br><br><br><br></div>
+		{%endif%}
+	</div>
+	<div class="col-lg-3"></div>
+</div>
+{%endblock%}

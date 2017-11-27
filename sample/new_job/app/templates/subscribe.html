@@ -1,0 +1,54 @@
+{%extends 'base.html'%}
+{%import 'bootstrap/wtf.html' as wtf%}
+{%block body%}
+
+<div class="jumbotron container">
+	{%if current_user.is_authenticated%}
+		<h3>Welcome {{current_user.name}}</h3>
+	{%else%}
+		<h3>Welcome stranger, you need log in before you start to subscribe your key</h3>
+	{%endif%}
+	<div class="container">
+	
+		<div class="col-md-3"></div>
+		<div class="col-md-6">
+		<form method="post" class="text-center" class="form-inline">
+		{{wtf.quick_form(form_search)}}
+		</form>
+		
+		</div>
+		<div class="col-md-3"></div>
+	
+	</div>
+	{%for message in get_flashed_messages()%}
+		<div class="alert alert-warning container">
+		{{message}}
+		</div>
+	{%endfor%}
+	<br>
+	<div class="container">
+	<div class="col-md-2"></div>
+	<div class="col-md-8">
+	<span >
+		<h4>If the key word doesn't exsit in our database, we can search it for you immediately, it will takes sometime, once it's done we will inform you by email.</h4>
+	</span>
+	<span>
+	<h4>if you want to focus a keyword continously, you can subscribe it, we will 
+	keep checking it each 5 hours for a period time. The first check will be started by 5 
+	hours after your subscription. Still you will recieve our notice by email when each
+	 searching is done</h4>
+	 </span>
+	 </div>
+	 <div class="col-md-2"></div>
+	 </div>
+	 <div class="container">
+	 <div class="col-md-3"></div>
+	 <div class="col-md-6">
+	<form method="post" class="form-inline">
+		{{wtf.quick_form(form_sub)}}
+	</form>
+	</div>
+	<div class="col-md-3"></div>
+	</div>
+</div>
+{%endblock%}

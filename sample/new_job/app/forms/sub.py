@@ -21,8 +21,8 @@ class SubSearch(FlaskForm):
 class SubSub(FlaskForm):
 
 	subkey = StringField('', validators=[DataRequired(), Length(1, 40)])
-	#这里应该还有时间选项， 1为3天，2为7天
-	time_limit = SelectField('days', choices=[(3,'3days'), (7,'7days')], coerce=int)
+	#这里应该还有时间选项， 3为3天，7为7天
+	time_limit = SelectField('days', choices=[(3,'3days')], coerce=int)
 	submit = SubmitField('Subscribe')
 	
 	def validate_subkey(self, field):
