@@ -14,6 +14,7 @@ def user():
 	return render_template('user.html', form=form, reg=1)
 
 
+
 @bp.route('/login/', methods=['GET','POST'])
 def login():
 	form = LoginForm()
