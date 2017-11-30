@@ -5,7 +5,7 @@ import random
 from urllib import request, parse
 from urllib.error import URLError, HTTPError
 from bs4 import BeautifulSoup
-from ..model import db, User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
+from app.model import User, Jobbrief
 
 
 class Crawler_for_51job():
@@ -46,15 +46,15 @@ class Crawler_for_51job():
 			print ('QC HTTPError, %s'%e.code)
 			#this proxy ip need to be marked in db 
 			#self.proxy_obj.remove(temp)
-			time.sleep(3)
+			time.sleep(1)
 			return self.open_url(site)
 		except URLError as e:
 			print ('URLError!, %s'%e.reason)
-			#time.sleep(3)
+			time.sleep(1)
 			return self.open_url(site)
 		except Exception as e:
 			print ('Unknown error!, %s'%str(e))
-			#time.sleep(3)
+			time.sleep(3)
 			return self.open_url(site)
 
 	def job_list(self):

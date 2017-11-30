@@ -1,16 +1,14 @@
 import logging
-import re
 import json
 import random
 import time 
-from io import BytesIO
 import gzip
+from io import BytesIO
 from urllib import request, parse
 from urllib.error import URLError, HTTPError
 from flask import current_app
 from bs4 import BeautifulSoup
-from .proxy_ip import GetIps
-from ..model import db, User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
+from app.model import  User, Jobbrief
 
 class Crawler_for_Lagou(Format):
 
@@ -29,12 +27,13 @@ class Crawler_for_Lagou(Format):
 		rv = True if page==1 else False
 		para = {'first':rv, 'pn':page, 'kd':keyword}
 		self.data = parse.urlencode(para).encode('utf-8')
+		'''
 		self.header = {'Accept-Language':'zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4',
 					'Connection':'keep-alive',
 					'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8',
-					'Cookie':'user_trace_token=20170712112047-fe9dead6591f42f2a63afcfc2b0e07a9; LGUID=20170712112048-1995c8d8-66b1-11e7-a7b9-5254005c3644; index_location_city=%E6%88%90%E9%83%BD; JSESSIONID=ABAAABAACBHABBI4192AB821327D51F91B7440FB1C297B5; _gat=1; PRE_UTM=; PRE_HOST=; PRE_SITE=; PRE_LAND=https%3A%2F%2Fwww.lagou.com%2F; _gid=GA1.2.248362695.1509540117; _ga=GA1.2.1509692273.1499829648; Hm_lvt_4233e74dff0ae5bd0a3d81c6ccf756e6=1508330244,1508773823; Hm_lpvt_4233e74dff0ae5bd0a3d81c6ccf756e6=1509540129; LGSID=20171101204156-0b7f5844-bf02-11e7-b0f3-525400f775ce; LGRID=20171101204207-124080f9-bf02-11e7-b0f3-525400f775ce; TG-TRACK-CODE=index_search; SEARCH_ID=3f1c510c1d3b4ee98e9329ac74fbf51b',
 					'X-Anit-Forge-Code':'0',
 					'X-Requested-With':'XMLHttpRequest'}
+		'''
 
 	def get_proxy(self):
 		'''pick a proxy ip randomly from 10 proxy ip addresses
@@ -111,9 +110,7 @@ class Crawler_for_Lagou(Format):
 		
 
 	def job_detail(self, job_id, job_link):
-		
-		time.sleep(2)
-
+	
 		x = gzip.GzipFile(fileobj=BytesIO(self.open_url(job_link)))
 		html = x.read().decode()
 		bs = BeautifulSoup(html, 'html5lib')

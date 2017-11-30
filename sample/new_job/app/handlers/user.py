@@ -2,9 +2,9 @@ from flask import Blueprint, render_template, Flask, request
 from flask import redirect, url_for, flash, abort
 from flask_login import login_user, current_user, logout_user, login_required
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from ..model import db, Jobbrief, Jobdetail, Company, Jobsite, User
-from ..forms.user import LoginForm, Regis, Reset
-from ..utils.send_mail import send_mail
+from app.model import db, Jobbrief, Jobdetail, Company, Jobsite, User
+from app.forms.user import LoginForm, Regis, Reset
+from app.helper import send_mail
 
 bp = Blueprint('user', __name__)
 
@@ -13,11 +13,24 @@ def user():
 	form = LoginForm()
 	return render_template('user.html', form=form, reg=1)
 
+#flask_form是如何实现合法性检测的？
 
 
 @bp.route('/login/', methods=['GET','POST'])
 def login():
 	form = LoginForm()
+	if form.validate_on_submit():
+		user_name = form.name.data
+		passwd = form.password.data
+		user = User.query.filter_by(name=user_name).first()
+		if user and user.verify_passwd(passwd):
+			login_user(user)
+			return redirect(request.args.get('next') or url_for('.user') )
+		else:
+			flash('Incorrect name or password!')
+			return redirect(request.args.get('next') or url_for('.user'))
+
+	'''
 	if request.method == 'POST':
 		user_name = request.form.get('name')
 		passwd = request.form.get('password')
@@ -28,6 +41,7 @@ def login():
 		else:
 			flash('Incorrect name or password!')
 			return redirect(request.args.get('next') or url_for('.user'))
+	'''
 	return render_template('user.html', form=form, reg=1)
 
 
@@ -66,7 +80,6 @@ def reset():
 			return render_template(request.args.get('next') or url_for('.user'))
 		else:
 			flash ('fail to reset your code!')
-			return redirect(url_for('.reset'))
 	return render_template('user.html', form=form, reg=3)
 
 

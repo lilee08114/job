@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from flask_wtf import FlaskForm
 from flask_login import current_user
-from wtforms import StringField, SubmitField, PasswordField, TextField, SelectField
-from wtforms.validators import DataRequired, Length, Email, EqualTo
+from wtforms import StringField, SubmitField, SelectField
+from wtforms.validators import DataRequired, Length
 from wtforms import ValidationError
 from ..model import Jobbrief, Jobdetail, Company, Jobsite, User, Subscribe
 
