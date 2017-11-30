@@ -1,18 +1,11 @@
-import re
-import json
 import logging
-from datetime import datetime, timedelta
-from flask import current_app, Flask
-from celery import Task, group, chain
-import jieba.analyse
 from .crawlerHandler import Links
-from ..model import db, User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
-from app.celery import ce
-from . import Format ,whenFinishCrawlDetail, whenFinishUpdateDetail
-from lagou import Crawler_for_Lagou
-from liepin import Crawler_for_Liepin
-from qiancheng import Crawler_for_51job
-from proxy_pool import ProxyPool
+from app import ce
+from . import whenFinishCrawlDetail, whenFinishUpdateStatus
+from .lagou import Crawler_for_Lagou
+from .liepin import Crawler_for_Liepin
+from .qiancheng import Crawler_for_51job
+from .proxy_pool import ProxyPool
 
 #这个module相互引用太严重，是很脆弱的，最好能切分开
 
@@ -31,6 +24,7 @@ class Crawler():
 		self.qc = Crawler_for_51job(link.qianCheng(), self.proxy)
 		self.lp = Crawler_for_Liepin(link.liePin(), self.proxy)
 		self.lg = Crawler_for_Lagou(link.laGou(), self.proxy)
+
 
 	def subsequent_tasks(self, days, interval):
 		#根据间隔的天数获取任务的countdown数列，据此生成后续的所有任务对象
@@ -59,11 +53,8 @@ class Crawler():
 		self.lp_list.apply_async((subscribe), link=subseq_lp)
 		self.lg_list.apply_async((subscribe), link=subseq_lg)
 
-
 	@ce.task(base=whenFinishCrawlDetail)
 	def qc_list(self, subscribe, identifier='qc'):
-		#identifier 主要是决定在on_success回调函数中，调用哪一个网站的抓取程序
-		#当QC完成，应当更具identifier来调用QC的详情抓取
 		#qc = Crawler_for_51job(self.qc_link, self.proxy)
 		self.qc.job_list()
 
@@ -77,18 +68,16 @@ class Crawler():
 		#lg = Crawler_for_Lagou(self.lp_link, self.proxy)
 		self.lg.job_list()
 
-	@ce.task(base=whenFinishUpdateDetail)
-	def qc_detail(self, job_id, job_link, subscribe):
-		#subscribe决定是否在on_success回调中更新subscribe信息
-		#job_id在保存时需要
+	@ce.task(base=whenFinishUpdateStatus)
+	def qc_detail(self, job_id, job_link):
 		self.qc.job_detail(job_id, job_link)
 
-	@ce.task(base=whenFinishUpdateDetail)
-	def lp_detail(self, job_id, job_link, subscribe):
+	@ce.task(base=whenFinishUpdateStatus)
+	def lp_detail(self, job_id, job_link):
 		self.lp.job_detail(job_id, job_link)
 
-	@ce.task(base=whenFinishUpdateDetail)
-	def lg_detail(self, job_id, job_link, subscribe):
+	@ce.task(base=whenFinishUpdateStatus)
+	def lg_detail(self, job_id, job_link):
 		self.lg.job_detail(job_id, job_link)
 
 

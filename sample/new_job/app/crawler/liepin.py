@@ -6,7 +6,7 @@ from urllib.error import URLError, HTTPError
 from io import BytesIO
 import gzip
 from bs4 import BeautifulSoup
-from ..model import db, User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
+from ..model import User, Jobbrief
 
 
 class Crawler_for_Liepin(Format):
@@ -61,11 +61,11 @@ class Crawler_for_Liepin(Format):
 				print ('LP HTTPError %s'%(e.code))
 				#this proxy ip need to be marked in db 
 				#self.proxy_obj.remove(temp)
-				time.sleep(3)
+				time.sleep(1)
 				return self.open_url(site)
 		except URLError as e:
 			print ('URLError! %s'%e.reason)
-			time.sleep(3)
+			time.sleep(1)
 			return self.open_url(site)
 		except Exception as e:
 			print ('Unknown error!, %s'%str(e))
@@ -121,7 +121,6 @@ class Crawler_for_Liepin(Format):
 		job_id: job's raw info id
 		job_link: job's detail info link
 		'''
-		time.sleep(3)
 		job_requirement = []
 		url = self.check_link(job_link)
 		logging.info('Searching LP DETL: key: %s, link: %s'%(job['key'], url))

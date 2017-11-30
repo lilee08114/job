@@ -1,13 +1,6 @@
 import logging
 import random
-from flask import current_app
 from urllib.parse import quote
-from .lagou import Crawler_for_Lagou
-from .liepin import Crawler_for_Liepin
-from .qiancheng import Crawler_for_51job
-from ..model import db, Ip_pool
-from .proxy_ip import GetIps
-
 #约定：发布时间选项为：None, 24  72
 #约定：工资有None, ‘3K以下’，‘3k-6k’，‘6k-10k’，‘10k以上’
 #约定：经验要求：None,‘无要求’，‘1-3年’，‘3年以上’

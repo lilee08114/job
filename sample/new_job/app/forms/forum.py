@@ -1,9 +1,8 @@
 from flask_wtf import FlaskForm
-from flask_login import current_user
 from wtforms import StringField, SubmitField, PasswordField, TextAreaField
-from wtforms.validators import DataRequired, Length, Email, EqualTo
-from wtforms import ValidationError
-from ..model import Jobbrief, Jobdetail, Company, Jobsite, User
+from wtforms.validators import DataRequired, Length
+
+
 
 class Send_post(FlaskForm):
 

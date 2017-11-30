@@ -1,6 +1,7 @@
-
-
-
+import random
+from app import app
+from app.model import Ip_pool
+from app.proxy import GetIps
 
 class ProxyPool():
 
@@ -42,11 +43,12 @@ class ProxyPool():
 
 	@classmethod
 	def _proxy_resources(cls, site):
+		#在这里添加，ip库刷新逻辑
 		'''input: 'qc' or 'lg' or 'lp' corresponding to each website
 		get 10 proxy ip addresses from database
 		return: a list of proxy ip addresses
 		'''
-		with current_app.app_context():
+		with app.app_context():
 			if site == 'qc':
 				ip_obj = Ip_pool.query.filter_by(qc_status=True).all()
 				print ('----qc-%s-----'%(len(ip_obj)))

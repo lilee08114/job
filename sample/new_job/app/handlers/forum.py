@@ -1,10 +1,9 @@
 import re
-from ..model import db, Jobbrief, Jobdetail, Company, Jobsite, User, Post, Comment
+from app.model import Post, Comment
 from flask import Blueprint, render_template, redirect, url_for, request, abort, current_app
-from flask_login import login_user, current_user, logout_user, login_required
+from flask_login import current_user, login_required
 import bleach
-from ..forms.forum import Send_post, Send_comment
-
+from app.forms.forum import Send_post, Send_comment
 
 bp = Blueprint('forum', __name__)
 

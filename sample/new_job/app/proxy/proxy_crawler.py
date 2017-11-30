@@ -2,7 +2,8 @@ import re
 from bs4 import BeautifulSoup
 from urllib import request
 from flask import current_app
-from ..model import db, Ip_pool
+from app.model import Ip_pool
+from app.extensions import db
 
 class GetIps():
 	#这个模块作用是接受fresh命令，然后获取20个有效的代理IP，并存储

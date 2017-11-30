@@ -17,12 +17,12 @@ class User(UserMixin, CRUD_Model):
 	focus = db.Column(db.String(100))
 	time = db.Column(db.DateTime(), default=datetime.now())
 	confirm = db.Column(db.Boolean(), default=False)
-
+	'''
 	posts = db.relationship('Post', back_populates='author', lazy='dynamic')
 	comments = db.relationship('Comment', back_populates='author', lazy='dynamic')
 	sub_info = db.relationship('Subscribe', back_populates='user', lazy='dynamic')
 	profile = db.relationship('Profile', back_populates='user', lazy='dynamic')
-
+	'''
 
 	@property
 	def password(self):
@@ -56,11 +56,13 @@ class Post(CRUD_Model):
 	post = db.Column(db.Text(), nullable=False)
 	post_time = db.Column(db.DateTime(), default=datetime.now())
 	labels = db.Column(db.Text())
+	author_id = db.Column(db.Integer)################
 
+	'''
 	author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 	author = db.relationship('User', back_populates='posts', lazy=True)
 	comment = db.relationship('Comment', back_populates='post', lazy='dynamic')
-	
+	'''
 	def __repr__(self):
 		return '<object Post, id: {}>'.format(self.id)
 
@@ -70,12 +72,15 @@ class Comment(CRUD_Model):
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
 	comment = db.Column(db.Text(), nullable=False)
 	comment_time = db.Column(db.DateTime(), default=datetime.now())
+	author_id = db.Column(db.Integer)#############
+	post_id = db.Column(db.Integer)###############
 
+	'''
 	author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 	author = db.relationship('User', back_populates='comments', lazy=True) 
 	post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
 	post = db.relationship('Post', back_populates='comment', lazy=True)
-
+	'''
 	def __repr__(self):
 		return '<object Comment, id: {}>'.format(self.id)
 
@@ -96,6 +101,9 @@ class Jobbrief(CRUD_Model):
 	job_labels = db.Column(db.Text())
 	company = db.Column(db.String(50))
 
+	company_id = db.Column(db.Integer)#######################
+	subscribe_id = db.Column(db.Integer)#################
+	'''
 	company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
 	#下面这一个，在实际存储中，应当注意，在订阅中需要，非订阅中不需要, 每次对结果的存贮都需要判断
 	subscribe_id = db.Column(db.Integer, db.ForeignKey('subInfo.id')) 
@@ -104,7 +112,7 @@ class Jobbrief(CRUD_Model):
 	company = db.relationship('Company', back_populates='job', lazy=True)
 	detail = db.relationship('Jobdetail', back_populates='abstract', lazy='dynamic')
 	sub_info = db.relationship('Subscribe', back_populates='brief')
-
+	'''
 	def __repr__(self):
 		return '<object Jobbrief, id: {}, key_word: {}>'.format(self.id, self.kwy_word)
 
@@ -116,9 +124,11 @@ class Profile(CRUD_Model):
 	salary = db.Column(db.Integer)
 	exp = db.Column(db.Integer)
 	edu = db.Column(db.Integer)
-	user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True)
 
-	user = db.relationship('User', back_populates='profile')
+	user_id = db.Column(db.Integer, unique=True)#########################
+
+	#user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True)
+	#user = db.relationship('User', back_populates='profile')
 
 	def __repr__(self):
 		return '<object Profile, id: {}>'.format(self.id)
@@ -142,9 +152,11 @@ class Jobsite(CRUD_Model):
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
 	site = db.Column(db.String(100))
 	have_detail = db.Column(db.Boolean(), default=False)
-	brief_id = db.Column(db.Integer, db.ForeignKey('brief.id'))
-	
-	brief = db.relationship('Jobbrief', back_populates='job_link')
+
+	brief_id = db.Column(db.Integer)#########################
+
+	#brief_id = db.Column(db.Integer, db.ForeignKey('brief.id'))
+	#brief = db.relationship('Jobbrief', back_populates='job_link')
 
 	def __repr__(self):
 		return '<object Jobsite, id: {}>'.format(self.id)
@@ -155,10 +167,11 @@ class Jobdetail(CRUD_Model):
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
 	requirement = db.Column(db.Text())
 
+	brief_id = db.Column(db.Integer)#########################
+	'''
 	brief_id = db.Column(db.Integer, db.ForeignKey('brief.id'))
-
 	abstract = db.relationship('Jobbrief', back_populates='detail')
-
+	'''
 	def __repr__(self):
 		return '<object Jobdetail, id: {}>'.format(self.id)
 
@@ -169,7 +182,7 @@ class Company(CRUD_Model):
 	company_name = db.Column(db.String(50))
 	company_site = db.Column(db.String(100))
 
-	job = db.relationship('Jobbrief', back_populates='company', lazy='dynamic')
+	#job = db.relationship('Jobbrief', back_populates='company', lazy='dynamic')
 
 	def __repr__(self):
 		return '<object Company, company_name: {}>'.format(self.company_name)
@@ -181,10 +194,11 @@ class Subscribe(CRUD_Model):
 	sub_key = db.Column(db.String(50), nullable=False)					#before
 	sub_start = db.Column(db.DateTime(), default=datetime.now())		#before
 	sub_end = db.Column(db.DateTime())									#after
-	subscriber_id = db.Column(db.Integer, db.ForeignKey('user.id'))		#before
-	
-	brief = db.relationship('Jobbrief', back_populates='sub_info', lazy='dynamic')
-	user = db.relationship('User', back_populates='sub_info')
+
+	subscriber_id = db.Column(db.Integer)
+	#subscriber_id = db.Column(db.Integer, db.ForeignKey('user.id'))		#before
+	#brief = db.relationship('Jobbrief', back_populates='sub_info', lazy='dynamic')
+	#user = db.relationship('User', back_populates='sub_info')
 
 	def __repr__(self):
 		return '<object Subscribe, key_word: {}>'.format(self.sub_key)

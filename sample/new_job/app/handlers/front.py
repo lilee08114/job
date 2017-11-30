@@ -2,15 +2,12 @@ import re
 from flask import Blueprint, render_template, request
 from flask import redirect, url_for, flash
 from flask_login import current_user
-from ..model import db, Jobbrief, Jobdetail, Company
-from ..model import Jobsite, User, Assessment, Profile
-from ..forms.home import SearchForm
+from app.model import Jobbrief, Jobdetail, Company
+from app.model import Jobsite, User, Assessment, Profile
+
 
 
 bp = Blueprint('front', __name__)
-
-
-
 
 @bp.route('/')
 def home():
@@ -57,6 +54,7 @@ def satisfy(paginate, key):
 
 @bp.route('/detail/<int:job_id>/')
 def detail(job_id):
+    #需要改进！
     job_obj = Jobbrief.query.filter_by(id=job_id).first_or_404()
    
     job_detail = Jobdetail.query.filter_by(brief_id=job_id).first_or_404().requirement
@@ -64,12 +62,3 @@ def detail(job_id):
     #job_detail = json.loads(job_detail)
     return render_template('jobs.html', job=job_obj, detail=job_detail)
 
-
-@bp.route('/fresh_ip/')
-def fresh_ip():
-    from ..crawler.proxy_ip import GetIps
-    print ('now start search prxoy ips')
-    s = GetIps()
-    s.fresh_ip()
-    print ('ip search ends')
-    return render_template('home.html')

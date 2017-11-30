@@ -1,7 +1,7 @@
 from datetime import datetime
 from celery import Task
 import jieba.analyse
-from ..model import db, User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
+from app.model import User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
 
 class whenFinishCrawlDetail(Task):
 
@@ -30,7 +30,7 @@ class whenFinishCrawlDetail(Task):
 		
 		
 
-class whenFinishUpdateDetail(Task):
+class whenFinishUpdateStatus(Task):
 
 	def on_success(self, retval, task_id, args, kwargs):
 		ins = args[0]
