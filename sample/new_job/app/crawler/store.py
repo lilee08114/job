@@ -39,7 +39,8 @@ class Crawler():
 		ct_time = interval
 		while ct_time < days*24*60*60:
 			ct.append(ct_time)
-			ct_time += intervalu.01`qc
+			ct_time += interval
+			
 
 		subsequent_qc = [self.qc_list.apply_async((True,), countdown=i) for i in ct]
 		subsequent_lp = [self.lp_list.apply_async((True,), countdown=i) for i in ct]
