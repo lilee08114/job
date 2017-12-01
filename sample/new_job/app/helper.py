@@ -1,10 +1,11 @@
 
+
 from flask_mail import Message
 from flask import render_template, url_for
 #define the assistant function here
 from app.extensions import db, mail
 
-def send_mail():
+def send_mail(target_mail, token, name):
 	msg = Message(subject='Please Confirm your Mail',
 				recipients=[target_mail]
 				)
@@ -20,18 +21,9 @@ class Assessment():
 class CRUD_Model(db.Model):
 	#here we add the CRUD functions for database
 
-	def save(self, table=None):
+	def commit_save(self):
 		#receive table obj and save it !what about the app_context?
 		#in crawler need app_context
-		if table is None:
-			db.session.add(self)
-		else:
-			db.session.add(table)
-
-
-	def _save(self):
-		#if success return True, otherwise False
-		db.session.add(self)
 		try:
 			db.session.commit()
 			print ('save {} successfully!'.format(self))
@@ -39,10 +31,23 @@ class CRUD_Model(db.Model):
 			print (self.id)
 			print ('--------LOOK THE TABLE ID  END----------')
 			return self.id
-		except:
+		except Exception ,e:
 			db.session.rollback()
 			print ('save {} failed!'.format(self))
+			print (str(e))
 			return False
+
+	def _save(self):
+		#if success return True, otherwise False
+		#outside app?
+		try:
+			db.session.add(self)
+			return self.commit_save()
+		except RuntimeError:
+			from . import app
+			with app.app_context:
+				db.session.add(self)
+				return self.commit_save()
 
 
 	def delete(cls, pk):

@@ -6,7 +6,6 @@ from flask import Flask, current_app
 from app.extensions import db
 from app.helper import CRUD_Model
 
-
 class User(UserMixin, CRUD_Model):
 	__tablename__ = 'user'
 
@@ -153,7 +152,7 @@ class Jobsite(CRUD_Model):
 	site = db.Column(db.String(100))
 	have_detail = db.Column(db.Boolean(), default=False)
 
-	brief_id = db.Column(db.Integer)#########################
+	brief_id = db.Column(db.Integer, nullable=False)#########################
 
 	#brief_id = db.Column(db.Integer, db.ForeignKey('brief.id'))
 	#brief = db.relationship('Jobbrief', back_populates='job_link')

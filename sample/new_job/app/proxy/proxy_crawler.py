@@ -39,7 +39,7 @@ class GetIps():
 			return False
 		return True
 
-	def _save(self):
+	def save(self):
 		#write the ip addresses into db.
 		from app.myapp import app
 		with app.app_context():
@@ -47,11 +47,7 @@ class GetIps():
 			for i in self.ip_pool:
 				ip, port, security, scheme = i
 				new_ip = Ip_pool(ip=ip, port=port, security=security, scheme=scheme)
-				db.session.add(new_ip)
-				try:
-					db.session.commit()
-				except:
-					db.session.rollback()
+				new_ip._save()
 
 	def _parse_tr_tag(self, tr_tag):
 		ip_addr = re.search('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', i)
@@ -76,7 +72,7 @@ class GetIps():
 			print (ip_obj)
 			if ip_obj and self._validate_ip(ip_obj) == True:
 				self.ip_pool.append(ip_obj)
-		self._save()
+		self.save()
 
 	def _ip181_ip(self):
 		html = self._open_url(self.url2)
@@ -89,7 +85,7 @@ class GetIps():
 			ip_obj = self._parse_tr_tag(str(tag))
 			if self._validate_ip(ip_obj) == True:
 				self.ip_pool.append(ip_obj)
-		self._save()
+		self.save()
 					
 
 

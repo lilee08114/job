@@ -35,7 +35,6 @@ class Crawler():
 			ct.append(ct_time)
 			ct_time += interval
 			
-
 		subsequent_qc = [self.qc_list.apply_async((True,), countdown=i) for i in ct]
 		subsequent_lp = [self.lp_list.apply_async((True,), countdown=i) for i in ct]
 		subsequent_lg = [self.lg_list.apply_async((True,), countdown=i) for i in ct]

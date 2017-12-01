@@ -37,5 +37,9 @@ class Reset(FlaskForm):
 	submit = SubmitField('Submit')
 
 	def validate_origin(self, field):
-		if current_user.verify_passwd(field.data):
+		if not current_user.verify_passwd(field.data):
 			raise ValidationError('Origin password is incorrect!')
+
+	def validate_new2(self, field):
+		if current_user.verify_passwd(field.data):
+			raise ValidationError('new password must be different from origin one!')

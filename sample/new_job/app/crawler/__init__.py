@@ -160,6 +160,7 @@ class Format():
 		job_site = Jobsite(site=link, brief_id=jid)
 		job_site._save()	
 
+
 	def save_job(self, jobinfo):
 		new_job = Jobbrief(key_word=self.keyword, 
 						job_name=jobinfo['job_name'],
@@ -176,7 +177,7 @@ class Format():
 						company=jobinfo['company_name'],
 						job_exp = self.exp_format(jobinfo.get('exp'))
 						)
-		return new_job._save()
+		return new_job._save()	#return brief_id or false
 
 
 	def save_raw_info(self, job_infos):
@@ -197,19 +198,21 @@ class Format():
 			return True
 		elif check == 'repeated job':
 			#this is a repeated job, so just save the website
+			#without foreignkey, is still work?
 			job_id = Jobbrief.query.filter_by(job_name=jobinfo['job_name'], 
 				job_salary_low=jobinfo['salary'][0], job_salary_high=jobinfo['salary'][1]).\
 				join(Jobbrief.company).filter_by(company_name=jobinfo['company_name']).\
 				first().id
 			site = Jobsite(brief_id=int(job_id), site=jobinfo['link'])
-			self.save(site)
+			site._save()
 			return False
 		elif check == 'new_job':
 			#new job, save it!
 			#job_dict = {}
 			self.save_company(jobinfo['company_name'])
 			job_id = self.save_job(jobinfo)
-			self.save_site(job_id, jobinfo['link'])
+			if job_id:
+				self.save_site(job_id, jobinfo['link'])
 			return False
 
 	def save_detail_info(self, job_id, job_detail):

@@ -3,10 +3,9 @@ from wtforms import StringField, SubmitField, PasswordField, TextAreaField
 from wtforms.validators import DataRequired, Length
 
 
-
 class Send_post(FlaskForm):
 
-	title = StringField('title', validators=[DataRequired(), Length(min=10, max=50)])
+	title = StringField('title', validators=[DataRequired(), Length(min=5, max=40)])
 	text = TextAreaField('write down your thought')
 	submit = SubmitField('submit')
 

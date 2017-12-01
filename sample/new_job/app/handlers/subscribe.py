@@ -7,7 +7,6 @@ from app.forms.sub import SubSearch, SubSub
 from app.model import Jobbrief, Jobdetail, Company, Jobsite, User, Subscribe
 from app.crawler.store import Crawler
 
-
 bp = Blueprint('subscribe', __name__)
 
 #需要登陆
@@ -45,36 +44,3 @@ def subscribe():
 	return render_template('subscribe.html', form_search=form_search, form_sub=form_sub)
 
 
-def period_format(days):
-	'''
-	now = datetime.now()
-	countdown = 5*60*60
-	period_list = []
-	if days==3:
-		#------------------------
-		start = now + timedelta(seconds=countdown)
-		end = now + timedelta(days=3)
-		while start<end:
-			period_list.append(countdown)
-			start += timedelta(seconds=countdown)
-		print (period_list)
-		return period_list
-		#------------------------
-
-	elif days==7:
-		start = now + timedelta(seconds=countdown)
-		end = now + timedelta(days=7)
-		while start<end:
-			period_list.append(countdown)
-			start += timedelta(seconds=countdown)
-		print (period_list)
-		return period_list
-
-	else:
-		return period_list
-	'''
-	ct = 5*60*60
-	if days==3:
-		return [ct]*(3*24//5)
-	else:
-		return []

@@ -1,4 +1,6 @@
+from flask_login import current_user
 from suite import BaseSuite
+from app.model import User
 
 
 class TestSignup(BaseSuite):
@@ -61,9 +63,95 @@ class TestSignup(BaseSuite):
 class TestSignin(BaseSuite):
 
 	def test_signin_page(self):
-		res = self.client.get(self.url_for())
+		res = self.client.get(self.url_for('user.login'))
+		self.assertIn(???)
 
 	def test_sign_in(self):
 		self.prepare_user()
+		res = self.client.post(self.url_for('user.login'),
+						data={'name':'', 'password':'1'})
+		self.assertIn(??????)
 
+		res = self.client.post(self.url_for('user.login'),
+						data={'name':'foo', 'password':''})
+		self.assertIn(?????????)
+
+		res = self.client.post(self.url_for('user.login'),
+						data={'name':'foo1', 'password':'1'})
+		self.assertIn(?????????)
+
+		res = self.client.post(self.url_for('user.login'),
+						data={'name':'foo', 'password':'11'})
+		self.assertIn(?????????)
+
+		res = self.client.post(self.url_for('user.login'),
+						data={'name':'foo', 'password':'1'})
+		self.assertIn(?????????)
+
+		#more tests here look up the session id?
+		#vist some login required pages
+class TestUser(BaseSuite):
+
+	def test_user_page(self):
+		res = self.client.get('user.user')
+		self.assertIn('welcome', res.data)
+
+class TestSignout(BaseSuite):
+
+	def test_logout(self):
+		res = self.client.get(self.url_for('use.logout'))
+		self.assertIn(?????????)
+
+	#visit some login required pages
+
+class TestResetCode(BaseSuite):
+
+	def test_reset_page(self):
+		#need to be improved
+		res = self.client.get(self.url_for('use.reset'))
+		self.assertIn('</form>', res.data)
 	
+	def test_invalid_reset_form(self):
+		res = self.client.post(self.url_for('use.reset'),
+				data={'origin':'', 'new1':'22', 'new2':'22'})
+		self.assertIn(?????)
+
+		res = self.client.post(self.url_for('use.reset'),
+				data={'origin':'1', 'new1':'', 'new2':''})
+		self.assertIn(?????)
+
+		res = self.client.post(self.url_for('use.reset'),
+				data={'origin':'1', 'new1':'22', 'new2':''})
+		self.assertIn(?????)
+
+		res = self.client.post(self.url_for('use.reset'),
+				data={'origin':'1', 'new1':'22', 'new2':'21'})
+		self.assertIn(?????)
+
+		res = self.client.post(self.url_for('use.reset'),
+				data={'origin':'11', 'new1':'22', 'new2':'22'})
+		self.assertIn(?????)
+
+		res = self.client.post(self.url_for('use.reset'),
+				data={'origin':'1', 'new1':'1', 'new2':'1'})
+		self.assertIn(?????)
+
+		res = self.client.post(self.url_for('use.reset'),
+				data={'origin':'1', 'new1':'22', 'new2':'22'})
+		self.assertIn(?????)
+
+class TestConfirmMail(BaseSuite):
+	def test_confirm_mail(self):
+		#login in 1st
+		self.prepare_user()
+		res = self.client.post(self.url_for('user.login'),
+						data={'name':'foo', 'password':'1'})
+		self.assertIn(?????????)
+		token = current_user._get_current_object().generate_token()
+		confirm_link = self.url_for('user.confirm_mail', token=token, _external=True)
+
+		res = self.client.get(confirm_link, follow_redirects=True)
+		self.assertIn('You email address has been confirmed', res.data)
+		self.assertTrue(current_user.confirm)
+
+		#here visist some email confirmed function

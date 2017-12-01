@@ -68,7 +68,6 @@ def regis():
 	print ('run here')
 	return render_template('user.html', form=form, reg=2)
 
-
 @bp.route('/reset_code/')
 @login_required
 def reset():

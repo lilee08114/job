@@ -16,7 +16,6 @@ class BaseSuite(unittest.TestCase):
 		self.app = app
 		self.client = app.test_client()
 
-
 	def tearDown(self):
 		db.session.remove()
 		db.drop_all()
@@ -32,6 +31,16 @@ class BaseSuite(unittest.TestCase):
 			db.session.add(bar)
 			db.session.add(baz)
 			db.commit()
+
+	def login(self):
+		self.prepare_user()
+		res = self.client.post(self.url_for('user.login'), data={
+				name='foo', password='1'}, follow_redirects=True)
+		self.assertIn('welcome', res.data)
+
+	def logout(self):
+		res = self.client.get('user.logout')
+		#?????????how to test?
 
 	def url_for(self, endpoint, **kwargs):
 		with self.app.request_context():
