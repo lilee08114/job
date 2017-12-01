@@ -63,7 +63,7 @@ def regis():
 			flash ('congrats, registraion succeed! A confirm letter \
 				has been sent to your email, plz check out')
 			return redirect(request.args.get('next') or url_for('.user'))
-		else::
+		else:
 			flash ('somthing wrong, registration failed!')
 	print ('run here')
 	return render_template('user.html', form=form, reg=2)

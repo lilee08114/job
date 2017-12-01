@@ -1,5 +1,5 @@
 import random
-from app import app
+
 from app.model import Ip_pool
 from app.proxy import GetIps
 
@@ -48,6 +48,7 @@ class ProxyPool():
 		get 10 proxy ip addresses from database
 		return: a list of proxy ip addresses
 		'''
+		from app import app
 		with app.app_context():
 			if site == 'qc':
 				ip_obj = Ip_pool.query.filter_by(qc_status=True).all()

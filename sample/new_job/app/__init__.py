@@ -1,8 +1,10 @@
 from flask import Flask
 from flask_login import LoginManager
 from app.model import User
+from flask_bootstrap import Bootstrap
 from app.extensions import db, ce, login_manager
-
+from . import config
+import pdb
 
 def create_app(config=None):
 
@@ -13,8 +15,10 @@ def create_app(config=None):
 	else:
 		app.config.update(config)
 
+	bootstrap = Bootstrap(app)
 	register_routes(app)
 	register_mail(app)
+	#pdb.set_trace()
 	register_db(app)
 	register_login_manager(app)
 	register_jinja(app)
@@ -33,6 +37,7 @@ def register_routes(app):
 def register_mail(app):
 	pass
 
+
 def register_db(app):
 	db.app = app
 	db.init_app(app)
@@ -50,8 +55,8 @@ def register_login_manager(app):
 	return app
 
 def register_jinja(app):
-	static_file
-	@app.context_processor
+	#static_file
+	#@app.context_processor
 	pass
 
 def make_celery(app):

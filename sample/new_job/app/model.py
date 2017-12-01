@@ -6,7 +6,7 @@ from flask import Flask, current_app
 from app.extensions import db
 from app.helper import CRUD_Model
 
-class User(UserMixin, CRUD_Model):
+class User(CRUD_Model, UserMixin, db.Model):
 	__tablename__ = 'user'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -47,7 +47,7 @@ class User(UserMixin, CRUD_Model):
 		
 
 
-class Post(CRUD_Model):
+class Post(CRUD_Model, db.Model):
 	__tablename__ = 'post'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -65,7 +65,7 @@ class Post(CRUD_Model):
 	def __repr__(self):
 		return '<object Post, id: {}>'.format(self.id)
 
-class Comment(CRUD_Model):
+class Comment(CRUD_Model, db.Model):
 	__tablename__ = 'comments'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -83,7 +83,7 @@ class Comment(CRUD_Model):
 	def __repr__(self):
 		return '<object Comment, id: {}>'.format(self.id)
 
-class Jobbrief(CRUD_Model):
+class Jobbrief(CRUD_Model, db.Model):
 	__tablename__ = 'brief'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -116,7 +116,7 @@ class Jobbrief(CRUD_Model):
 		return '<object Jobbrief, id: {}, key_word: {}>'.format(self.id, self.kwy_word)
 
 
-class Profile(CRUD_Model):
+class Profile(CRUD_Model, db.Model):
 	__tablename__ = 'profile'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -133,7 +133,7 @@ class Profile(CRUD_Model):
 		return '<object Profile, id: {}>'.format(self.id)
 
 
-class Assessment(CRUD_Model):
+class Assessment(CRUD_Model, db.Model):
 	__tablename__ = 'assess'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -145,7 +145,7 @@ class Assessment(CRUD_Model):
 	def __repr__(self):
 		return '<object Assessment, key_word: {}>'.format(self.key_word)
 
-class Jobsite(CRUD_Model):
+class Jobsite(CRUD_Model, db.Model):
 	__tablename__ = 'site'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -160,7 +160,7 @@ class Jobsite(CRUD_Model):
 	def __repr__(self):
 		return '<object Jobsite, id: {}>'.format(self.id)
 
-class Jobdetail(CRUD_Model):
+class Jobdetail(CRUD_Model, db.Model):
 	__tablename__ = 'requirement'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -174,7 +174,7 @@ class Jobdetail(CRUD_Model):
 	def __repr__(self):
 		return '<object Jobdetail, id: {}>'.format(self.id)
 
-class Company(CRUD_Model):
+class Company(CRUD_Model, db.Model):
 	__tablename__ = 'company'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -186,7 +186,7 @@ class Company(CRUD_Model):
 	def __repr__(self):
 		return '<object Company, company_name: {}>'.format(self.company_name)
 
-class Subscribe(CRUD_Model):
+class Subscribe(CRUD_Model, db.Model):
 	__tablename__ = 'subInfo'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True) 	#before
@@ -203,7 +203,7 @@ class Subscribe(CRUD_Model):
 		return '<object Subscribe, key_word: {}>'.format(self.sub_key)
 
 
-class Ip_pool(CRUD_Model):
+class Ip_pool(CRUD_Model, db.Model):
 	__tablename__ = 'ips'
 
 	id = db.Column(db.Integer, autoincrement=True, primary_key=True)

@@ -14,7 +14,7 @@ from .proxy_pool import ProxyPool
 
 class Crawler():
 
-	def __init__(self, key_word)
+	def __init__(self, key_word):
 		self.key_word = key_word
 		self.proxy = ProxyPool.get_30_proxies('qc')
 		link = Links(key_word)

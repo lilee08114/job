@@ -6,9 +6,10 @@ from urllib import request, parse
 from urllib.error import URLError, HTTPError
 from bs4 import BeautifulSoup
 from app.model import User, Jobbrief
+from . import Format
 
 
-class Crawler_for_51job():
+class Crawler_for_51job(Format):
 	
 	def __init__(self, url, proxy):
 		self.proxy_obj = proxy

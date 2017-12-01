@@ -6,7 +6,8 @@ from urllib.error import URLError, HTTPError
 from io import BytesIO
 import gzip
 from bs4 import BeautifulSoup
-from ..model import User, Jobbrief
+from app.model import User, Jobbrief
+from . import Format
 
 
 class Crawler_for_Liepin(Format):
@@ -131,7 +132,7 @@ class Crawler_for_Liepin(Format):
 			result = bs.find(class_='content content-word').strings
 		except AttributeError:
 			result = bs.find(class_='job-info-content').strings
-		except Exception, e:
+		except Exception as e:
 			result = ['Sorry, failed to fetch the contents, URL is {}'.format(url)]
 
 		for i in result:

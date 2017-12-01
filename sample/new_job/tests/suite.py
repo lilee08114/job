@@ -36,10 +36,11 @@ class BaseSuite(unittest.TestCase):
 		self.prepare_user()
 		res = self.client.post(self.url_for('user.login'), data={
 				name='foo', password='1'}, follow_redirects=True)
-		self.assertIn('welcome', res.data)
+		self.assertIn('Welcome back', res.data)
 
 	def logout(self):
-		res = self.client.get('user.logout')
+		res = self.client.get('user.logout', follow_redirects=True)
+		self.assertIn('Welcome to Stoya', res.data)
 		#?????????how to test?
 
 	def url_for(self, endpoint, **kwargs):

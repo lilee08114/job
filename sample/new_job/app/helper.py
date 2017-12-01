@@ -1,9 +1,9 @@
 
-
+from sqlalchemy.ext.declarative import declared_attr
 from flask_mail import Message
 from flask import render_template, url_for
 #define the assistant function here
-from app.extensions import db, mail
+from app.extensions import  mail
 
 def send_mail(target_mail, token, name):
 	msg = Message(subject='Please Confirm your Mail',
@@ -18,7 +18,7 @@ class Assessment():
 	pass
 
 
-class CRUD_Model(db.Model):
+class CRUD_Model():
 	#here we add the CRUD functions for database
 
 	def commit_save(self):
@@ -31,7 +31,7 @@ class CRUD_Model(db.Model):
 			print (self.id)
 			print ('--------LOOK THE TABLE ID  END----------')
 			return self.id
-		except Exception ,e:
+		except Exception as e:
 			db.session.rollback()
 			print ('save {} failed!'.format(self))
 			print (str(e))

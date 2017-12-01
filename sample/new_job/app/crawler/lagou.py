@@ -9,6 +9,7 @@ from urllib.error import URLError, HTTPError
 from flask import current_app
 from bs4 import BeautifulSoup
 from app.model import  User, Jobbrief
+from . import Format
 
 class Crawler_for_Lagou(Format):
 
