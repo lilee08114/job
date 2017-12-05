@@ -118,10 +118,12 @@ class GetIps():
 			GetIps._check.apply_async((self, proxy))
 			#break
 
-	def fresh_ip(self):
+	def fresh_ip(self, check=True):
 		#exposed api??
 		#here need more proxy searching logic
 		self._xicidaili_ip()
 		self._ip181_ip()
-		self.check()
+		if check:
+			self.check()
+			
 

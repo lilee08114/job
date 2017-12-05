@@ -1,7 +1,6 @@
 from .suite import BaseSuite
 from urllib import parse
 
-
 class TestHomePage(BaseSuite):
 
 	def test_home_page(self):

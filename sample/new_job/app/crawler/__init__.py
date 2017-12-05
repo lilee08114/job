@@ -50,7 +50,7 @@ class whenFinishUpdateStatus(Task):
 			if subscribe:
 				subscribe._update(sub_end=datetime.now())
 
-
+0
 
 
 class Format():
@@ -193,8 +193,7 @@ class Format():
 	def save_raw_info(self, jobinfo):
 		'''just write the raw information about the job into database
 		param:
-			job_infos: a list containing many dicts, each dict 
-				represents a job
+			job_infos: a dict represents a job
 		return a list containing many dicts, each dict represents a
 			job's information including 'id','exp','job_site'
 		'''
