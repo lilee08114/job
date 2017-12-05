@@ -4,8 +4,12 @@ import unittest
 import tempfile
 #here need some test configuration
 from flask import url_for
-from app import create_app
-from app.model import User
+from flask_login import current_user
+from new_job.app import create_app
+from new_job.app.model import User, Post, Comment
+from new_job.app.extensions import db
+
+#Again!!!!!! Module Import Error!!!!!WHAT THE HELL
 
 class BaseSuite(unittest.TestCase):
 	def setUp(self):
@@ -35,7 +39,7 @@ class BaseSuite(unittest.TestCase):
 	def login(self):
 		self.prepare_user()
 		res = self.client.post(self.url_for('user.login'), data={
-				name='foo', password='1'}, follow_redirects=True)
+				'name':'foo', 'password':'1'}, follow_redirects=True)
 		self.assertIn('Welcome back', res.data)
 
 	def logout(self):
@@ -46,6 +50,16 @@ class BaseSuite(unittest.TestCase):
 	def url_for(self, endpoint, **kwargs):
 		with self.app.request_context():
 			return url_for(endpoint, **kwargs)
+
+	def prepare_post(self):
+
+		post1 = Post(title='this is post 1',
+					post='this is some text! #1 job link test', author_id=current_user.id)
+		post1 = Post(title='this is post 2',
+					post='this is some text too!', author_id=current_user.id)
+		db.session.add(post1)
+		db.session.add(post2)
+		db.session.commit()
 
 
 

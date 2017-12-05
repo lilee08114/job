@@ -1,6 +1,6 @@
 from flask_login import current_user
 from suite import BaseSuite
-from app.model import User
+from new_job.app.model import User
 
 
 class TestSignup(BaseSuite):
@@ -61,14 +61,30 @@ class TestSignup(BaseSuite):
 
 		res = self.client.post(self.url_for('user.regis'), 
 					data={'name':'nnn3', 'mail':'test@email.com',
+							'passwd1':'1','passwd2':'1'}, follow_redirects=True)
+		self.assertIn('registraion succeed!', res.data)
+
+	def test_duplicate_account(self):
+		'''test duplicate name or email
+		'''
+		self.prepare_user()
+		res = self.client.post(self.url_for('user.regis'), 
+					data={'name':'foo', 'mail':'test11@email.com',
 							'passwd1':'1','passwd2':'1'})
-		self.assertIn(??????)
+		self.assertIn('name already exsits!', res.data)
+
+		res = self.client.post(self.url_for('user.regis'), 
+					data={'name':'nnn34', 'mail':'foo@email.com',
+							'passwd1':'1','passwd2':'1'})
+		self.assertIn('Email has been registered!', res.data)
+
 
 class TestSignin(BaseSuite):
 
 	def test_signin_page(self):
 		res = self.client.get(self.url_for('user.login'))
-		self.assertIn(???)
+		self.assertIn('Login', res.data)
+		self.assertIn('<form>', res.data)
 
 	def test_sign_in(self):
 		self.prepare_user()
@@ -97,8 +113,13 @@ class TestSignin(BaseSuite):
 class TestUser(BaseSuite):
 
 	def test_user_page(self):
+		self.logout()
 		res = self.client.get('user.user')
-		self.assertIn(????????)
+		self.assertIn('Login', res.data)
+		self.assertIn('<form>', res.data)
+		self.login()
+		res = self.client.get('user.user')
+		self.assertIn('Welcome back, foo', res.data)
 
 class TestSignout(BaseSuite):
 
@@ -112,46 +133,51 @@ class TestResetCode(BaseSuite):
 
 	def test_reset_page(self):
 		#need to be improved
+		self.logout()
+		res = self.client.get(self.url_for('use.reset'))
+		self.assertIn('Login', res.data)
+		self.assertIn('<form>', res.data)
+		self.login()
 		res = self.client.get(self.url_for('use.reset'))
 		self.assertIn('</form>', res.data)
+		self.assertIn('Reset Code', res.data)	
 	
 	def test_invalid_reset_form(self):
-		self.login()
+		#self.login()
 		res = self.client.post(self.url_for('use.reset'),
 				data={'origin':'', 'new1':'22', 'new2':'22'})
-		self.assertIn(?????)
+		self.assertIn('This field is required', res.data)
 
 		res = self.client.post(self.url_for('use.reset'),
 				data={'origin':'1', 'new1':'', 'new2':''})
-		self.assertIn(?????)
+		self.assertIn('This field is required', res.data)
 
 		res = self.client.post(self.url_for('use.reset'),
 				data={'origin':'1', 'new1':'22', 'new2':''})
-		self.assertIn(?????)
+		self.assertIn('This field is required', res.data)
 
 		res = self.client.post(self.url_for('use.reset'),
 				data={'origin':'1', 'new1':'22', 'new2':'21'})
-		self.assertIn(?????)
+		self.assertIn('password must match', res.data)
 
 		res = self.client.post(self.url_for('use.reset'),
 				data={'origin':'11', 'new1':'22', 'new2':'22'})
-		self.assertIn(?????)
+		self.assertIn('Origin password is incorrect!', res.data)
 
 		res = self.client.post(self.url_for('use.reset'),
 				data={'origin':'1', 'new1':'1', 'new2':'1'})
-		self.assertIn(?????)
+		self.assertIn('new password must be different from origin', res.data)
 
 		res = self.client.post(self.url_for('use.reset'),
-				data={'origin':'1', 'new1':'22', 'new2':'22'})
-		self.assertIn(?????)
+				data={'origin':'1', 'new1':'22', 'new2':'22'}, follow_redirects=True)
+		self.assertIn('you code has been reseted', res.data)
 
 class TestConfirmMail(BaseSuite):
 	def test_confirm_mail(self):
 		#login in 1st
 		self.prepare_user()
-		res = self.client.post(self.url_for('user.login'),
-						data={'name':'foo', 'password':'1'})
-		self.assertIn(?????????)
+		self.login()
+		self.assertFalse(current_user.confirm)
 		token = current_user._get_current_object().generate_token()
 		confirm_link = self.url_for('user.confirm_mail', token=token, _external=True)
 

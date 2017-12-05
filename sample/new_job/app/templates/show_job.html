@@ -42,7 +42,7 @@
 					<td>{{i.job_quantity}}</td><td>{{i.job_time}}</td>
 					<td>W-T-F</td>
 					<td>{{i.job_labels}}</td>
-					<!--href={{i.job_link.first().site}}-->
+					
 					<td><a href={{url_for('.detail', job_id=i.id)}}><img src="{{url_for('static', filename='images/link.png')}}" width="25" height="10"></a></td>	
 				</tr>
 				{%endfor%}

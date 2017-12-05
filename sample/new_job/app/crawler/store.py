@@ -21,9 +21,9 @@ class Crawler():
 		#self.qc_link = link.qianCheng()
 		#self.lp_link = link.liePin()
 		#self.lg_link = link.laGou()
-		self.qc = Crawler_for_51job(link.qianCheng(), self.proxy)
-		self.lp = Crawler_for_Liepin(link.liePin(), self.proxy)
-		self.lg = Crawler_for_Lagou(link.laGou(), self.proxy)
+		self.qc = Crawler_for_51job(link.qianCheng(), self.proxy, key_word)
+		self.lp = Crawler_for_Liepin(link.liePin(), self.proxy, key_word)
+		self.lg = Crawler_for_Lagou(link.laGou(), self.proxy, key_word)
 
 
 	def subsequent_tasks(self, days, interval):
@@ -44,13 +44,13 @@ class Crawler():
 		#link决定是否有后续的任务
 		#如果有subscribe，则有link任务，link任务中带有countdown参数
 		#z这里的subscribe主要是决定在详情抓取任务完成后是否更新subscirbe数据库信息
-		subseq_qc, subseq_lp, subseq_lg = None
+		subseq_qc = subseq_lp = subseq_lg = None
 		if subscribe:
 			subseq_qc, subseq_lp, subseq_lg = self.subsequent_tasks(days, interval)
 
-		self.qc_list.aplly_async((subscribe), link=subseq_qc)
-		self.lp_list.apply_async((subscribe), link=subseq_lp)
-		self.lg_list.apply_async((subscribe), link=subseq_lg)
+		Crawler.qc_list.apply_async((self, subscribe), link=subseq_qc)
+		Crawler.lp_list.apply_async((self, subscribe,), link=subseq_lp)
+		Crawler.lg_list.apply_async((self, subscribe,), link=subseq_lg)
 
 	@ce.task(base=whenFinishCrawlDetail)
 	def qc_list(self, subscribe, identifier='qc'):

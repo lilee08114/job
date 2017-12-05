@@ -9,7 +9,7 @@ from app.crawler.store import Crawler
 
 bp = Blueprint('subscribe', __name__)
 
-#需要登陆
+#需要登陆1
 @bp.route('/', methods=['GET','POST'])
 #@check_confirm_state
 @login_required

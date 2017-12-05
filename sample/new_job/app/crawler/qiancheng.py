@@ -11,7 +11,8 @@ from . import Format
 
 class Crawler_for_51job(Format):
 	
-	def __init__(self, url, proxy):
+	def __init__(self, url, proxy, key):
+		self.keyword = key
 		self.proxy_obj = proxy
 		self.agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
 		self.ref = 'http://search.51job.com/list/090200,090200,0000,9,9,99,python,2,1.html?'		
@@ -60,11 +61,13 @@ class Crawler_for_51job(Format):
 
 	def job_list(self):
 		html = self.open_url(self.url)
-		#print (html)
+		print (html)
 		bs = BeautifulSoup(html, 'html5lib')
 
-		#job_list = []
-		bs.find(class_="el title").decompose()
+		job_list = []
+		et = bs.find(class_="el title")
+		if et:
+			et.decompose()
 		for job_obj in bs.find(attrs={'id':'resultList'}).find_all(class_='el'):
 			single_job_info = {}
 			single_job_info['job_name'] = job_obj.find_all('a')[0].string.strip()

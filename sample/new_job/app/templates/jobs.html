@@ -39,10 +39,9 @@
 		
 			<h3>labels:&nbsp;{{job.job_labels}}</h3>
 	
-		
-			<h3>company:&nbsp;{{job.company.company_name}}</h3>
+			<h3>company:&nbsp;{{get_company(job.company_id).company_name}}</h3>
 			
-			<h3>company_site:&nbsp;{{job.company.company_site}}</h3>
+			<h3>company_site:&nbsp;{{get_company(job.company_id).company_site}}</h3>
 			
 		</div><br>
 		<div class="container">

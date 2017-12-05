@@ -1,8 +1,8 @@
 from flask import Flask
 from flask_login import LoginManager
-from app.model import User
+from app.model import User, Company
 from flask_bootstrap import Bootstrap
-from app.extensions import db, ce, login_manager
+from app.extensions import db, ce, login_manager, mail
 from . import config
 import pdb
 
@@ -35,7 +35,8 @@ def register_routes(app):
 	return app
 
 def register_mail(app):
-	pass
+	mail.init_app(app)
+	return app
 
 
 def register_db(app):
@@ -55,9 +56,20 @@ def register_login_manager(app):
 	return app
 
 def register_jinja(app):
-	#static_file
-	#@app.context_processor
-	pass
+	@app.context_processor
+	def user_processor():
+		def get_author_name(author_id):
+			author_name = User.query.get(author_id).name
+			return author_name
+		return dict(get_author_name=get_author_name)
+
+	@app.context_processor
+	def company_processor():
+		def get_company(company_id):
+			company = Company.query.get(company_id)
+			return company
+		return dict(get_company=get_company)
+
 
 def make_celery(app):
 	#Integrate the Flask and Celery

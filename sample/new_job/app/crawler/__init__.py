@@ -1,5 +1,8 @@
+import re
 from datetime import datetime
 from celery import Task
+from sqlalchemy import text
+from sqlalchemy.sql import and_
 import jieba.analyse
 from app.model import User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
 
@@ -121,40 +124,47 @@ class Format():
 		return int(re.search('\d{1,2}',exp).group(0))
 
 	def info_check(self, salary, comp_name, j_name, job_time):
-		'''check whether the job has alrady been stored, if yes then break
-		and stop the crawler cause that means we have fetch all the newly
-		posted job. 
-		but jobs that have the sanme name, same company name, 
-		and same salary but different pub time with someone which already 
-		exists in the database will only add its link into Jobsite table
-		cause it's a repeated job.
-		others will be normally stored
+		'''is the job new to us?
 		'''
-		
+		stmt = text("SELECT * " 
+					"FROM brief LEFT OUTER JOIN company "
+						"ON company.id = brief.company_id "
+					"WHERE brief.job_name = :j_name " 
+					"AND brief.job_salary_low = :salary_l "
+					"AND brief.job_salary_high = :salary_h "
+					"AND company.company_name = :comp_name ")
+		check = Jobbrief.query.from_statement(stmt).params(
+			j_name=j_name, salary_l=salary[0], salary_h=salary[1], comp_name=comp_name
+													).first()
+		if check is None:
+			return 'new_job'
+		else:
+			return 'end'
+
+		'''
 		check = Jobbrief.query.filter_by(job_name=j_name, 
 					job_salary_low=salary[0], job_salary_high=salary[1]
-					).join(Jobbrief.company).filter_by(
-					company_name=comp_name)
+					).join(Company).filter_by(company_name=comp_name)
+
 		if check.first() is None:
 			return 'new_job'
 			
 		elif Jobbrief.query.filter_by(job_name=j_name, job_time=job_time,
 					job_salary_low=salary[0], job_salary_high=salary[1]
-					).join(Jobbrief.company).filter_by(
+					).join(Company).filter_by(
 					company_name=comp_name).first():
 			return 'end'
 		
-		else:
-			return 'repeated job'
+		#else:						
+		#	return 'repeated job'
+		'''
 
-	def save_company(self,company_name):
+	def save_company(self, jobinfo):
 		'''if the company is new to us,save it
 		'''
-		company = Company.query.filter_by(company_name=company_name).first()
-		if company is None:
-			comp = Company(company_name=jobinfo['company_name'],
-							company_site=jobinfo['company_site'])
-			comp._save()
+		comp = Company(company_name=jobinfo['company_name'],
+						company_site=jobinfo['company_site'])
+		comp._save()
 
 	def save_site(self, jid, link):
 		job_site = Jobsite(site=link, brief_id=jid)
@@ -180,7 +190,7 @@ class Format():
 		return new_job._save()	#return brief_id or false
 
 
-	def save_raw_info(self, job_infos):
+	def save_raw_info(self, jobinfo):
 		'''just write the raw information about the job into database
 		param:
 			job_infos: a list containing many dicts, each dict 
@@ -192,7 +202,7 @@ class Format():
 		jobinfo['pub_time'] = self.pub_time_format(jobinfo['pub_time'])
 
 		check = self.info_check(jobinfo['salary'], jobinfo['company_name'],
-									jobinfo['job_name'], jobinfo['pub_time'])	
+						jobinfo['job_name'], jobinfo['pub_time'])	
 		if check == 'end':
 			#no more new job, stop searching
 			return True
@@ -209,7 +219,7 @@ class Format():
 		elif check == 'new_job':
 			#new job, save it!
 			#job_dict = {}
-			self.save_company(jobinfo['company_name'])
+			self.save_company(jobinfo)
 			job_id = self.save_job(jobinfo)
 			if job_id:
 				self.save_site(job_id, jobinfo['link'])

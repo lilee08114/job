@@ -6,7 +6,8 @@
 				<div class="col-lg-3"></div>
 				<div class="col-lg-6">
 						<div >
-								<p class="text-left">{{post.author.name}}</p>	
+
+								<p class="text-left">{{get_author_name(post.author_id)}}</p>	
 								<p class="text-right">	{{post.post_time}}</p>
 								<h1>{{post.title}}</h1>
 								<h3>	{{post.post|safe}}</h3>
@@ -14,7 +15,7 @@
 								<p>	comments:</p>
 								{%for comment in comments%}
 										
-										<p>{{comment.author.name}}: {{comment.comment}}</p><br>
+										<p>{{get_author_name(comment.author_id)}}: {{comment.comment}}</p><br>
 								{%endfor%}<br>
 								
 								{{macros.render_pagination(paginate, 'forum.post', post.id)}}

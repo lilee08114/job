@@ -1,13 +1,14 @@
 {%extends 'base.html'%}
 {%import 'bootstrap/wtf.html' as wtf%}
 {%block body%}
+
 <div class="container-flush">
 	<div class="col-lg-3"></div>
 	<div class="col-lg-6">
 		{%for post in posts%}
 			<h2><a href="{{url_for('forum.post',post_id=post.id)}}">{{post.title}}</a></h2>
 			<p>{{post.post}}</p>
-			<p class="small">{{post.labels}}--{{post.author.name}}--{{post.post_time}}</p><br>
+			<p class="small">{{post.labels}}--{{get_author_name(post.author_id)}}--{{post.post_time}}</p><br>
 		{%endfor%}
 		<ul class="pager">
 		{%if has_prev%}

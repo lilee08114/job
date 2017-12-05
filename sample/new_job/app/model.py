@@ -6,6 +6,7 @@ from flask import Flask, current_app
 from app.extensions import db
 from app.helper import CRUD_Model
 
+
 class User(CRUD_Model, UserMixin, db.Model):
 	__tablename__ = 'user'
 
@@ -98,7 +99,7 @@ class Jobbrief(CRUD_Model, db.Model):
 	job_time = db.Column(db.DateTime())
 	job_other_require = db.Column(db.String(50))
 	job_labels = db.Column(db.Text())
-	company = db.Column(db.String(50))
+	#company = db.Column(db.String(50))
 
 	company_id = db.Column(db.Integer)#######################
 	subscribe_id = db.Column(db.Integer)#################
@@ -210,6 +211,7 @@ class Ip_pool(CRUD_Model, db.Model):
 	ip = db.Column(db.String(20), nullable=False, unique=True)
 	port = db.Column(db.String(10), nullable=False)	
 	scheme = db.Column(db.String(10), nullable=False)
+	#available = db.Column(db.Boolean, default=True)
 	qc_status = db.Column(db.Boolean, default=True)
 	lg_status = db.Column(db.Boolean, default=True)
 	lp_status = db.Column(db.Boolean, default=True)

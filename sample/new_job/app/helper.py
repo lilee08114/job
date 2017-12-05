@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from flask_mail import Message
 from flask import render_template, url_for
 #define the assistant function here
-from app.extensions import  mail
+from app.extensions import  db, mail
 
 def send_mail(target_mail, token, name):
 	msg = Message(subject='Please Confirm your Mail',
@@ -50,8 +50,10 @@ class CRUD_Model():
 				return self.commit_save()
 
 
-	def delete(cls, pk):
-		table = cls.query.filter_by(criteria).first()
+	def _delete(self):
+		db.session.delete(self)
+		db.session.commit()
+		print ('{} has been deleted!'.format(self))
 
 	def _update(self, **kwargs):
 

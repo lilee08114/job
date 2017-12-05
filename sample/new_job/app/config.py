@@ -1,4 +1,4 @@
-SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://root:a123@localhost:3306/lilee'
+SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://root:a123@localhost:3306/stoya'
 SQLALCHEMY_ECHO = False
 
 SECRET_KEY = 'SOME SECRET KEY'

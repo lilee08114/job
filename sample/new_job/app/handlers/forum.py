@@ -20,7 +20,6 @@ def forum(page=1):
 						author_id=current_user.id)
 		new_post._save()
 		
-
 	return render_template('forum.html', posts=posts, 
 							current_page=page, form=form, 
 							has_prev=paginate.has_prev,
@@ -47,7 +46,7 @@ def post(post_id):
 	page = request.args.get('page', 1, type=int)
 	if form.validate_on_submit():
 		new_comment = Comment(comment=form.comment.data,
-							author_id = current_user.id,
+							author_id=current_user.id,
 							post_id=post_id)
 		new_comment._save()
 		return redirect(url_for('.post', post_id=post_id))

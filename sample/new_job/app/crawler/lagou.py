@@ -13,7 +13,7 @@ from . import Format
 
 class Crawler_for_Lagou(Format):
 
-	def __init__(self, url, page, keyword, proxy):
+	def __init__(self, url, proxy, keyword, page=1):
 		'''on lagou site, the keyword should be posted to its host rather than
 		through url
 
@@ -22,8 +22,9 @@ class Crawler_for_Lagou(Format):
 		keyword: which keyword's info you want to get
 		proxy: 10 proxy ip addresses
 		'''
+		self.keyword = keyword
 		self.url = url
-		self.timeout = 5
+		self.timeout = 10
 		self.proxy_obj = proxy
 		rv = True if page==1 else False
 		para = {'first':rv, 'pn':page, 'kd':keyword}
@@ -62,6 +63,7 @@ class Crawler_for_Lagou(Format):
 		'''
 		opener, header = self.get_proxy()
 		req = request.Request(site, headers=header)
+		print ('URL is: {}'.format(site))
 		try:
 			with opener.open(req, data, timeout=self.timeout) as f:
 				return f.read().decode('utf-8')

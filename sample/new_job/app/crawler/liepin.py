@@ -12,9 +12,10 @@ from . import Format
 
 class Crawler_for_Liepin(Format):
 	
-	def __init__(self, url, proxy):
+	def __init__(self, url, proxy, key):
+		self.keyword = key
 		self.url = url
-		self.timeout = 5
+		self.timeout = 10
 		self.proxy_obj = proxy
 		'''
 		self.header = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',

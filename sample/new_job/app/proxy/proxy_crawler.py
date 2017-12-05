@@ -4,9 +4,10 @@ from urllib import request
 from flask import current_app
 from app.model import Ip_pool
 from app.extensions import db
+from app.extensions import ce
 
 class GetIps():
-	#这个模块作用是接受fresh命令，然后获取20个有效的代理IP，并存储
+	#这个模块作用是接受fresh命令，get ip proxy from website!
 	def __init__(self):
 		#timeout: timeout parameter for urlopen, only for validate_ip method
 		self.url1 = 'http://www.xicidaili.com/'
@@ -41,7 +42,7 @@ class GetIps():
 
 	def save(self):
 		#write the ip addresses into db.
-		from app.myapp import app
+		from app import app
 		with app.app_context():
 			#db.create_all()
 			for i in self.ip_pool:
@@ -50,11 +51,11 @@ class GetIps():
 				new_ip._save()
 
 	def _parse_tr_tag(self, tr_tag):
-		ip_addr = re.search('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', i)
+		ip_addr = re.search('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', tr_tag)
 		if bool(ip_addr):
-			port_ = re.search('<td>(\d{1,5})<\/td>', i)
-			security = re.search('高匿|透明|普匿', i)
-			scheme_ = re.search('(?i)https|http', i)
+			port_ = re.search('<td>(\d{1,5})<\/td>', tr_tag)
+			security = re.search('高匿|透明|普匿', tr_tag)
+			scheme_ = re.search('(?i)https|http', tr_tag)
 			ip_obj = (ip_addr.group(), port_.group(1), security.group(), scheme_.group())
 			return ip_obj
 
@@ -68,8 +69,7 @@ class GetIps():
 
 		for tag in bs.find_all('tr'):
 			ip_obj = self._parse_tr_tag(str(tag))
-			print ('-----------?--------')
-			print (ip_obj)
+			
 			if ip_obj and self._validate_ip(ip_obj) == True:
 				self.ip_pool.append(ip_obj)
 		self.save()
@@ -77,20 +77,51 @@ class GetIps():
 	def _ip181_ip(self):
 		html = self._open_url(self.url2)
 		bs = BeautifulSoup(html, 'html5lib')
-		title = bs.find(class_='active')
-		if title:
-			title.decompose()
 
-		for tag in bs.find_all('tr'):
+		for tag in bs.find_all('tr')[2:]:
+			if 'more' in str(tag):
+				continue
+			if 'subtitle' in str(tag):
+				continue
+			if 'active' in str(tag):
+				continue
 			ip_obj = self._parse_tr_tag(str(tag))
 			if self._validate_ip(ip_obj) == True:
 				self.ip_pool.append(ip_obj)
 		self.save()
-					
+		
+	@ce.task(queue='check')
+	def _check(self, proxy_obj):
+		#pk: proxy pk in database
+		#proxy_ip: proxy like 'http://117.65.35.123:55555'.
+		proxy = {'http://':proxy_obj.scheme+proxy_obj.ip+':'+proxy_obj.port}
+		handler = request.ProxyHandler(proxy)
+		opener = request.build_opener(handler)
+		req = request.Request(self.test_url, headers=self.header, method='HEAD')
+		try:
+			print (opener.open(req, timeout=self.timeout).getcode())
+		except HTTPError as e:
+			print ('-HTTPError, %s'%e.code)
+			proxy_obj._delete()
+		except URLError as e:
+			print ('-URLError, %s'%e.reason)
+			proxy_obj._delete()
+		except:
+			print ('-bad request!')
+			#return False
 
+	def check(self):
+		#这里可以添加更多的筛选条件
+		proxies = Ip_pool.query.all()
+		for proxy in proxies:
+			#self._check.apply_async((proxy,))
+			GetIps._check.apply_async((self, proxy))
+			#break
 
 	def fresh_ip(self):
 		#exposed api??
 		#here need more proxy searching logic
 		self._xicidaili_ip()
 		self._ip181_ip()
+		self.check()
+

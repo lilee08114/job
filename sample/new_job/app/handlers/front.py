@@ -62,3 +62,10 @@ def detail(job_id):
     #job_detail = json.loads(job_detail)
     return render_template('jobs.html', job=job_obj, detail=job_detail)
 
+
+@bp.route('/fresh/')
+def fresh():
+    from app.proxy.proxy_crawler import GetIps
+    x = GetIps()
+    x.fresh_ip()
+    return render_template('home.html')
