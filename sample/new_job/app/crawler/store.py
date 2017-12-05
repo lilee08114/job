@@ -48,9 +48,9 @@ class Crawler():
 		if subscribe:
 			subseq_qc, subseq_lp, subseq_lg = self.subsequent_tasks(days, interval)
 
-		Crawler.qc_list.apply_async((self, subscribe), link=subseq_qc)
-		Crawler.lp_list.apply_async((self, subscribe,), link=subseq_lp)
-		Crawler.lg_list.apply_async((self, subscribe,), link=subseq_lg)
+		Crawler.qc_list.apply_async((self, subscribe, 'qc'), link=subseq_qc)
+		Crawler.lp_list.apply_async((self, subscribe, 'lp'), link=subseq_lp)
+		Crawler.lg_list.apply_async((self, subscribe, 'lg'), link=subseq_lg)
 
 	@ce.task(base=whenFinishCrawlDetail)
 	def qc_list(self, subscribe, identifier='qc'):

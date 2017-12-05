@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from celery import Task
 from sqlalchemy import text
 from sqlalchemy.sql import and_
@@ -10,19 +10,32 @@ class whenFinishCrawlDetail(Task):
 
 	def links_filter(self, identifier):
 		#[(1,'www....', (2,'wwww....'))]
-		jobs_without_detail = Jobsite.query.filter_by(have_detail=False).all()
 		#获取每个工作的link和id，不使用外键
-		id_and_link = [(job.brief_id, job.site) for job in jobs_without_detail]
-		return [link for link in id_and_link if identifier in link[1]]
+		links = []
+		for job in Jobsite.query.filter_by(have_detail=False).all():
+			if identifier == 'lp':
+				if 'liepin' in job.site or 'www' not in job.site:
+					links.append((job.brief_id, job.site))
+			elif identifier == 'qc':
+				if '51job' in job.site:
+					links.append((job.brief_id, job.site))
+			elif identifier == 'lg':
+				if 'lagou' in job.site:
+					links.append((job.brief_id, job.site))
+
 
 	def on_success(self, retval, task_id, args, kwargs):
 		#从数据库里拿出have_detail为False的数据，筛选，启动相应的详情抓取爬虫 
 		#根据identifier来决定从数据库刷选那些网站的链接来进行详情抓取
-		identifier = kwargs.get('identifier')
 
+		identifier = args[2]
 		links = self.links_filter(identifier)
 		ins = args[0]  #???
 		is_subscribe = args[1]
+		print ('----------ON SUCCESS START----------')
+		print ('identifier: {}, links:{}, ins:{}, is_subscribe:{}'.\
+			format(identifier, links, ins, is_subscribe))
+		print ('----------ON SUCCESS END----------')
 		for link in links:
 			if identifier == 'qc':
 				ins.qc_detail.aplly_async((link[0], link[1], is_subscribe))
@@ -164,27 +177,26 @@ class Format():
 		'''
 		comp = Company(company_name=jobinfo['company_name'],
 						company_site=jobinfo['company_site'])
-		comp._save()
+		return comp._save()
 
 	def save_site(self, jid, link):
 		job_site = Jobsite(site=link, brief_id=jid)
 		job_site._save()	
 
 
-	def save_job(self, jobinfo):
+	def save_job(self, comp_id, jobinfo):
 		new_job = Jobbrief(key_word=self.keyword, 
 						job_name=jobinfo['job_name'],
 						job_location=jobinfo.get('job_location'), 
 						job_salary_low=jobinfo['salary'][0],
 						job_salary_high=jobinfo['salary'][1],
-						#job_exp=self.exp_format(jobinfo['exp']),
 						job_edu=jobinfo.get('edu'),
 						job_quantity=jobinfo.get('quantity'),
 						job_time=jobinfo['pub_time'],
 						job_other_require=jobinfo.get('other_requirement'),
 						job_labels=',\n'.join(jobinfo.get('job_labels')) if \
 										jobinfo.get('job_labels') is not None else None,
-						company=jobinfo['company_name'],
+						company_id=comp_id,
 						job_exp = self.exp_format(jobinfo.get('exp'))
 						)
 		return new_job._save()	#return brief_id or false
@@ -218,8 +230,8 @@ class Format():
 		elif check == 'new_job':
 			#new job, save it!
 			#job_dict = {}
-			self.save_company(jobinfo)
-			job_id = self.save_job(jobinfo)
+			comp_id = self.save_company(jobinfo)
+			job_id = self.save_job(comp_id, jobinfo)
 			if job_id:
 				self.save_site(job_id, jobinfo['link'])
 			return False

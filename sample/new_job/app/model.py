@@ -114,7 +114,7 @@ class Jobbrief(CRUD_Model, db.Model):
 	sub_info = db.relationship('Subscribe', back_populates='brief')
 	'''
 	def __repr__(self):
-		return '<object Jobbrief, id: {}, key_word: {}>'.format(self.id, self.kwy_word)
+		return '<object Jobbrief, id: {}, key_word: {}>'.format(self.id, self.key_word)
 
 
 class Profile(CRUD_Model, db.Model):

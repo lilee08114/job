@@ -61,7 +61,6 @@ class Crawler_for_51job(Format):
 
 	def job_list(self):
 		html = self.open_url(self.url)
-		print (html)
 		bs = BeautifulSoup(html, 'html5lib')
 
 		job_list = []
