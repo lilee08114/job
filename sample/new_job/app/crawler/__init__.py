@@ -1,70 +1,10 @@
 import re
 from datetime import datetime, timedelta
-from celery import Task
+
 from sqlalchemy import text
 from sqlalchemy.sql import and_
 import jieba.analyse
 from app.model import User, Jobbrief, Jobdetail, Company, Jobsite, Subscribe
-
-class whenFinishCrawlDetail(Task):
-
-	def links_filter(self, identifier):
-		#[(1,'www....', (2,'wwww....'))]
-		#获取每个工作的link和id，不使用外键
-		links = []
-		for job in Jobsite.query.filter_by(have_detail=False).all():
-			if identifier == 'lp':
-				if 'liepin' in job.site or 'www' not in job.site:
-					links.append((job.brief_id, job.site))
-			elif identifier == 'qc':
-				if '51job' in job.site:
-					links.append((job.brief_id, job.site))
-			elif identifier == 'lg':
-				if 'lagou' in job.site:
-					links.append((job.brief_id, job.site))
-
-
-	def on_success(self, retval, task_id, args, kwargs):
-		#从数据库里拿出have_detail为False的数据，筛选，启动相应的详情抓取爬虫 
-		#根据identifier来决定从数据库刷选那些网站的链接来进行详情抓取
-
-		identifier = args[2]
-		links = self.links_filter(identifier)
-		ins = args[0]  #???
-		is_subscribe = args[1]
-		print ('----------ON SUCCESS START----------')
-		print ('identifier: {}, links:{}, ins:{}, is_subscribe:{}'.\
-			format(identifier, links, ins, is_subscribe))
-		print ('----------ON SUCCESS END----------')
-		for link in links:
-			if identifier == 'qc':
-				ins.qc_detail.aplly_async((link[0], link[1], is_subscribe))
-			elif identifier == 'lp':
-				ins.lp_detail.aplly_async((link[0], link[1], is_subscribe))
-			elif identifier == 'lg':
-				ins.lg_detail.aplly_async((link[0], link[1], is_subscribe))
-		
-		
-
-class whenFinishUpdateStatus(Task):
-
-	def on_success(self, retval, task_id, args, kwargs):
-		ins = args[0]
-		brief_id = args[1]
-		
-		job_link = Jobsite.query.filter_by(brief_id=brief_id).first()
-		if job_link:
-			job_link._update(have_detail=True)
-		#根据subscribe来决定是否写入subcribe数据库记录
-		is_subscribe = args[3]
-		if is_subscribe:
-			key_word = ins.key_word
-			subscribe = Subscribe.query.filter_by(sub_key=key_word).first()
-			if subscribe:
-				subscribe._update(sub_end=datetime.now())
-
-0
-
 
 class Format():
 	#公共类，负责将直接从网页上抓取的内容进行格式化并存储！
@@ -239,6 +179,7 @@ class Format():
 	def save_detail_info(self, job_id, job_detail):
 		new_detail =  Jobdetail(requirement=job_detail, brief_id=job_id)
 		new_detail._save()
+		#could update have_derail status in jobsite table!
 		
 
 	def extract_labels(self, sentence):

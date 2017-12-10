@@ -11,15 +11,16 @@ bp = Blueprint('forum', __name__)
 @bp.route('/<int:page>/', methods=['GET','POST'])
 def forum(page=1):
 	form = Send_post()
-	paginate = Post.query.order_by(Post.post_time).paginate(page=page, per_page=10)
-	posts = paginate.items
-	if form.validate_on_submit():
+	if hasattr(current_user, 'id') and form.validate_on_submit():
 		post = form.text.data
 		new_post = Post(title=form.title.data,
 						post=int_to_link(post),
 						author_id=current_user.id)
 		new_post._save()
-		
+		return redirect(url_for('forum.forum'))
+
+	paginate = Post.query.order_by(Post.post_time).paginate(page=page, per_page=10)
+	posts = paginate.items
 	return render_template('forum.html', posts=posts, 
 							current_page=page, form=form, 
 							has_prev=paginate.has_prev,
@@ -36,6 +37,7 @@ def int_to_link(post):
 		new_num = '<a href=%s>#%s</a>'%(url_for('front.detail', job_id=num_int), num_int)
 		post = post.replace(num, new_num, 1)
 	return post
+
 
 
 @bp.route('/post/<int:post_id>/', methods=['GET', 'POST'])

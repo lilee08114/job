@@ -45,11 +45,11 @@ def login():
 	return render_template('user.html', form=form, reg=1)
 
 
-@bp.route('/logout')
+@bp.route('/logout/')
 @login_required
 def logout():
 	logout_user()
-	return redirect(request.args.get('next') or url_for('front.home'))
+	return redirect(url_for('front.home'))
 
 
 @bp.route('/register/', methods=['GET', 'POST'])
@@ -68,7 +68,7 @@ def regis():
 	print ('run here')
 	return render_template('user.html', form=form, reg=2)
 
-@bp.route('/reset_code/')
+@bp.route('/reset_code/', methods=['GET', 'POST'])
 @login_required
 def reset():
 	form = Reset()
@@ -76,7 +76,7 @@ def reset():
 		user = current_user._get_current_object()
 		if user._update(password = form.new2.data):
 			flash ('you code has been reseted')
-			return render_template(request.args.get('next') or url_for('.user'))
+			return redirect(request.args.get('next') or url_for('.user'))
 		else:
 			flash ('fail to reset your code!')
 	return render_template('user.html', form=form, reg=3)

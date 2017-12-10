@@ -3,18 +3,26 @@ from flask_login import LoginManager
 from app.model import User, Company
 from flask_bootstrap import Bootstrap
 from app.extensions import db, ce, login_manager, mail
-from . import config
 import pdb
 
 def create_app(config=None):
 
 	app = Flask(__name__)
 
+	#if config is None:
+	#	app.config.from_pyfile('config.py') 
+	#else:
+	#	app.config.update(config)
+	'''
+	if config == 'production':
+		app.config.from_object('config.Production')
+	elif config == 'test':
+		app.config.from_object('config.Development')
+	'''
 	if config is None:
-		app.config.from_pyfile('config.py') 
+		app.config.from_object('config.Production')
 	else:
-		app.config.update(config)
-
+		app.config.from_object(config)
 	bootstrap = Bootstrap(app)
 	register_routes(app)
 	register_mail(app)
@@ -42,7 +50,7 @@ def register_mail(app):
 def register_db(app):
 	db.app = app
 	db.init_app(app)
-	db.drop_all()
+	#db.drop_all()
 	db.create_all()
 	return app
 

@@ -9,6 +9,18 @@
 	<div class="jumbotron container">
 		<h1>Welcome back, {{current_user.name}}</h1>
 	</div>
+	<div class="col-md-6 text-right text-justify">
+			<h1>This is news section！</h1>
+		</div>
+		<div class="col-md-6 img-rounded" style="background-color: white">
+			{%if reg==3%}
+			<form method="post" action="">
+				<h1>Reset Code</h1>
+				{{wtf.quick_form(form)}}
+			</form>
+		{%endif%}
+		</div>
+		
 	{%else%}
 	<div class="container">
 		<br>
@@ -37,11 +49,7 @@
 				<h1>Register</h1>
 				{{wtf.quick_form(form)}}<br>
 			</form>
-		{%elif reg==3%}
-			<form method="post" action="">
-				<h1>Reset Code</h1>
-				{{wtf.quick_form(form)}}
-			</form>
+		
 		{%endif%}
 		</div>
 	</div>

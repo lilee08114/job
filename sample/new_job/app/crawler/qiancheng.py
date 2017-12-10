@@ -60,14 +60,21 @@ class Crawler_for_51job(Format):
 			return self.open_url(site)
 
 	def job_list(self):
+
 		html = self.open_url(self.url)
 		bs = BeautifulSoup(html, 'html5lib')
+		result_list = bs.find(attrs={'id':'resultList'})
+
+		while not bool(result_list):
+			html = self.open_url(self.url)
+			bs = BeautifulSoup(html, 'html5lib')
+			result_list = bs.find(attrs={'id':'resultList'})
 
 		job_list = []
 		et = bs.find(class_="el title")
 		if et:
 			et.decompose()
-		for job_obj in bs.find(attrs={'id':'resultList'}).find_all(class_='el'):
+		for job_obj in result_list.find_all(class_='el'):
 			single_job_info = {}
 			single_job_info['job_name'] = job_obj.find_all('a')[0].string.strip()
 			single_job_info['link'] = job_obj.find_all('a')[0]['href']
@@ -95,7 +102,7 @@ class Crawler_for_51job(Format):
 		html = self.open_url(job_link)
 		#print (html)
 		bs = BeautifulSoup(html, 'html5lib')
-			
+	
 		exp = str(bs.find(class_='i1').next_sibling) if bs.find(class_='i1') else None
 		edu = str(bs.find(class_='i2').next_sibling)	if bs.find(class_='i2') else None
 		quantity = str(bs.find(class_='i3').next_sibling) if bs.find(class_='i3') else None
@@ -107,7 +114,7 @@ class Crawler_for_51job(Format):
 			tag.decompose()
 		for info in bs.find(class_="bmsg job_msg inbox").stripped_strings:
 			job_description.append(info)
-		jobInfo['job_requirement'] = job_description
+
 
 		requirement = ', '.join(job_description)
 		self.save_detail_info(job_id, requirement)
@@ -120,8 +127,7 @@ class Crawler_for_51job(Format):
 					job_quantity=quantity,
 					job_other_require=other_requirement
 					)
-
-		return jobInfo
+		return
 
 
 

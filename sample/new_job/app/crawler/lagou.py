@@ -1,5 +1,6 @@
 import logging
 import json
+import pdb
 import random
 import time 
 import gzip
@@ -63,26 +64,36 @@ class Crawler_for_Lagou(Format):
 		'''
 		opener, header = self.get_proxy()
 		req = request.Request(site, headers=header)
-		print ('URL is: {}'.format(site))
+		print ('URL is: {}, and set trace now'.format(site))
+		#pdb.set_trace()
 		try:
+			print ('-------------head start-----------')
+			print (opener.open(req, data, timeout=self.timeout).info())
+			print ('-------------head end-----------')
 			with opener.open(req, data, timeout=self.timeout) as f:
-				return f.read().decode('utf-8')
+				return f.read()
+		
 		except HTTPError as e:
-			print ('LG HTTPError, %s'%e.code)
-			print (site, data)
+			print ('LG HTTPError, %s, e %s'%(e.code, e))
+			#print ('LG site is {}, and UA is {}'.format(site, header['User-Agent']))
+			#f = opener.open(req, data, timeout=self.timeout)
+			print ('-------------head start-----------')
+			#print (f.info())
+			print ('-------------head end-----------')
 			#this proxy ip need to be marked in db 
 			#self.proxy_obj.remove(temp)
 			time.sleep(1)
-			return self.open_url(site)
-		except URLError:
+			#return self.open_url(site)
+		except URLError as e:
 			print ('URLError! %s'%e.reason)
 			time.sleep(1)
-			return self.open_url(site)
+			#return self.open_url(site)
 		except Exception as e:
 			print ('Unknown error!, %s'%str(e))
 			time.sleep(3)
-			return self.open_url(site)
-		 
+
+			#return self.open_url(site)
+
 
 	def job_list(self):
 		'''fetch the jon list, and parse and save rough infos about each job.
@@ -90,7 +101,7 @@ class Crawler_for_Lagou(Format):
 		'''
 		#jobinfo_without_detail = []
 
-		html = json.loads(self.open_url(self.url, self.data))
+		html = json.loads(self.open_url(self.url, self.data).decode('utf-8'))
 		for job_json in html['content']["positionResult"]["result"]:
 			single_job_info = {}
 			single_job_info['pub_time'] = job_json.get("createTime")
@@ -129,7 +140,7 @@ class Crawler_for_Lagou(Format):
 		job = Jobbrief.query.get(job_id)
 		job._update(job_labels=', '.join(job_labels))
 
-		return job
+		return
 
 
 

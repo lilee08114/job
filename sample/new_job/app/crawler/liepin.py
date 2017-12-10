@@ -125,7 +125,7 @@ class Crawler_for_Liepin(Format):
 		'''
 		job_requirement = []
 		url = self.check_link(job_link)
-		logging.info('Searching LP DETL: key: %s, link: %s'%(job['key'], url))
+		logging.info('Searching LP DETL: key: ?, link: %s'%(url))
 
 		bs = BeautifulSoup(self.open_url(url), 'html5lib')
 		#print (html)
@@ -144,7 +144,7 @@ class Crawler_for_Liepin(Format):
 		job = Jobbrief.query.get(job_id)
 		labels = self.extract_labels(requirement)
 		job._update(job_labels=', '.join(labels))
-		return job
+		return
 '''
 url = 'https://www.liepin.com/zhaopin?pubTime=3&dqs=280020&salary=10$15&compscale=&key=Python'
 outurl = r'C:\works\crawler\liepin.txt'
