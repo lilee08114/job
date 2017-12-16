@@ -35,14 +35,12 @@ class whenFinishCrawlDetail(Task):
 	def on_success(self, retval, task_id, args, kwargs):
 		#从数据库里拿出have_detail为False的数据，筛选，启动相应的详情抓取爬虫 
 		#根据identifier来决定从数据库刷选那些网站的链接来进行详情抓取
-		identifier = args[2]
-		links = self.links_filter(identifier)
 		ins = args[0]  #???
 		is_subscribe = args[1]
-		print ('----------ON SUCCESS START----------')
-		print ('identifier: {}, links:{}, ins:{}, is_subscribe:{}'.\
+		identifier = args[2]
+		links = self.links_filter(identifier)
+		logging.info('identifier: {}, links:{}, ins:{}, is_subscribe:{}'.\
 			format(identifier, links, ins, is_subscribe))
-		print ('----------ON SUCCESS END----------')
 		for link in links:
 			if identifier == 'qc':
 				Crawler.qc_detail.apply_async((ins, link[0], link[1], is_subscribe))
@@ -75,9 +73,6 @@ class Crawler():
 		self.key_word = key_word
 		self.proxy = ProxyPool.get_30_proxies('qc')
 		link = Links(key_word)
-		#self.qc_link = link.qianCheng()
-		#self.lp_link = link.liePin()
-		#self.lg_link = link.laGou()
 		self.qc = Crawler_for_51job(link.qianCheng(), self.proxy, key_word)
 		self.lp = Crawler_for_Liepin(link.liePin(), self.proxy, key_word)
 		self.lg = Crawler_for_Lagou(link.laGou(), self.proxy, key_word)
@@ -105,8 +100,8 @@ class Crawler():
 		if subscribe:
 			subseq_qc, subseq_lp, subseq_lg = self.subsequent_tasks(days, interval)
 
-		#Crawler.qc_list.apply_async((self, subscribe, 'qc'), link=subseq_qc)
-		#Crawler.lp_list.apply_async((self, subscribe, 'lp'), link=subseq_lp)
+		Crawler.qc_list.apply_async((self, subscribe, 'qc'), link=subseq_qc)
+		Crawler.lp_list.apply_async((self, subscribe, 'lp'), link=subseq_lp)
 		Crawler.lg_list.apply_async((self, subscribe, 'lg'), link=subseq_lg)
 
 	@ce.task(base=whenFinishCrawlDetail)

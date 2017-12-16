@@ -76,7 +76,7 @@ def reset():
 		user = current_user._get_current_object()
 		if user._update(password = form.new2.data):
 			flash ('you code has been reseted')
-			return redirect(request.args.get('next') or url_for('.user'))
+			return redirect(url_for('.user'))
 		else:
 			flash ('fail to reset your code!')
 	return render_template('user.html', form=form, reg=3)

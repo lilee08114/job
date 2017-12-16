@@ -1,5 +1,5 @@
 import random
-
+import logging
 from app.model import Ip_pool
 from app.proxy import GetIps
 
@@ -8,10 +8,8 @@ class ProxyPool():
 	@classmethod
 	def _user_agent_resources(cls):
 		#user_agent list
-		user_agents = ['Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; en-us) \
-				AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50',
-			'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-us) AppleWebKit/534.50 \
-				(KHTML, like Gecko) Version/5.1 Safari/534.50',
+		user_agents = ['Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_8; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50',
+			'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50',
 			'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0',
 			'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)',
 			'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)',
@@ -34,10 +32,11 @@ class ProxyPool():
 
 	@classmethod
 	def update_ip(cls):
-		print ('--searching the proxy ip--')
+		#when update this ?
+		logging.info('start updating the proxy ips')
 		search_proxy = GetIps()
 		search_proxy.fresh_ip()
-		print ('--searching ends--')
+		logging.info('updating the proxy ips end')
 
 	@classmethod
 	def _proxy_resources(cls, site):
@@ -50,19 +49,16 @@ class ProxyPool():
 		with app.app_context():
 			if site == 'qc':
 				ip_obj = Ip_pool.query.filter_by(qc_status=True).all()
-				print ('----qc-%s-----'%(len(ip_obj)))
 				if len(ip_obj) < 30:
 					cls.update_ip()
 					ip_obj = Ip_pool.query.filter_by(qc_status=True).all()
 			elif site == 'lg':
 				ip_obj = Ip_pool.query.filter_by(lg_status=True).all()
-				print ('----lg-%s-----'%(len(ip_obj)))
 				if len(ip_obj) < 30:
 					cls.update_ip()
 					ip_obj = Ip_pool.query.filter_by(qc_status=True).all()
 			elif site == 'lp':
 				ip_obj = Ip_pool.query.filter_by(lp_status=True).all()
-				print ('----lp-%s-----'%(len(ip_obj)))
 				if len(ip_obj) < 30:
 					cls.update_ip()
 					ip_obj = Ip_pool.query.filter_by(qc_status=True).all()
@@ -77,4 +73,5 @@ class ProxyPool():
 	def get_30_proxies(cls, site):
 		#input: 'qc' or 'lg' or 'lp' corresponding to each website
 		#return 10 proxy addresses, each one was attached with a user_agent
+		#('Mozilla/4.0 (... NT 6.0)', {'https':'http://112.74.32.237:6666'})
 		return list(zip(cls._user_agent_resources(), cls._proxy_resources(site)))

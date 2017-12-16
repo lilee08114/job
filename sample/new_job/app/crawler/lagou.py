@@ -41,57 +41,73 @@ class Crawler_for_Lagou(Format):
 	def get_proxy(self):
 		'''pick a proxy ip randomly from 10 proxy ip addresses
 		and construct the header with random User-Agent
-		retutn: tuple with proxy opener and header
+		retutn: tuple with proxy opener and header, and the index number of the proxy in the proxy_obj
 		'''
 		user_agent, proxy = random.choice(self.proxy_obj)
 		handler = request.ProxyHandler(proxy)
 		opener = request.build_opener(handler)
 		header = {'User-Agent':user_agent,
+					#'Accept-Encoding':'gzip, deflate, br',
+					#'Referer':'https://www.lagou.com/jobs/',
+					#'Host':'www.lagou.com',
+					#'Origin':'https://www.lagou.com',
+					#'Accept':'application/json, text/javascript, */*; q=0.01',
+					#'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8',
 					'Accept-Encoding':'gzip, deflate, br',
-					'Referer':'https://www.lagou.com/jobs/list_python?labelWords=&\
-								fromSearch=true&suginput=',
-					'Host':'www.lagou.com',
-					'Origin':'https://www.lagou.com',
-					'Accept':'application/json, text/javascript, */*; q=0.01',
-					'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8'
+				'Referer':'https://www.lagou.com/jobs/list_python?px=default&city=%E6%88%90%E9%83%BD',
+				'Host':'www.lagou.com',
+				'Origin':'https://www.lagou.com',
+				'Accept':'application/json, text/javascript, */*; q=0.01',
+				'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8',
+				'X-Requested-With':'XMLHttpRequest'
 					}
 		
-		return (opener, header)
+		return (opener, header, proxy)
+
+	def _switch_scheme(self, proxy):
+		#switch the proxy ip scheme between http and https
+		#更新当前选中的proxy的scheme！
+		for k, v in proxy.items():
+			new_k = 'https' if k=='http' else 'http'
+		proxy[new_k] = v
+		del proxy[k]
+		return proxy
+
+	def _update_proxies(self, origin_proxy):
+		for i in enumerate(self.proxy_obj[:]):
+			k, v = i
+			header, proxy = v
+			if origin_proxy == proxy:
+				new_proxy = self._switch_scheme(origin_proxy)
+				self.proxy_obj[k] = (header, new_proxy)
 
 	def open_url(self, site, data=None):
 		'''open the given site with the proxy opener and header.
 		add HTTPError handling logic here!
 		'''
-		opener, header = self.get_proxy()
-		req = request.Request(site, headers=header)
-		print ('URL is: {}, and set trace now'.format(site))
+		count = 3				#if fails to open the url, just retry 3 times, not infinitely
+		opener, header, proxy = self.get_proxy()
+		req = request.Request(site, data, headers=header)
+		logging.info('[open url]URL is: {}'.format(site))
 		#pdb.set_trace()
 		try:
-			print ('-------------head start-----------')
-			print (opener.open(req, data, timeout=self.timeout).info())
-			print ('-------------head end-----------')
-			with opener.open(req, data, timeout=self.timeout) as f:
-				return f.read()
+			with opener.open(req, timeout=self.timeout) as f:
+				html = f.read()
+			return (html, proxy)
 		
 		except HTTPError as e:
-			print ('LG HTTPError, %s, e %s'%(e.code, e))
-			#print ('LG site is {}, and UA is {}'.format(site, header['User-Agent']))
-			#f = opener.open(req, data, timeout=self.timeout)
-			print ('-------------head start-----------')
-			#print (f.info())
-			print ('-------------head end-----------')
-			#this proxy ip need to be marked in db 
-			#self.proxy_obj.remove(temp)
-			time.sleep(1)
-			#return self.open_url(site)
+			logging.warning('[open url]LG HTTPError, %s, e %s'%(e.code, e))
+			count -= 1
+			return self.open_url(site)
 		except URLError as e:
-			print ('URLError! %s'%e.reason)
+			logging.warning('[open url]URLError! %s'%e.reason)
 			time.sleep(1)
-			#return self.open_url(site)
+			count -= 1
+			self._update_proxies(proxy)
+			return self.open_url(site)
 		except Exception as e:
-			print ('Unknown error!, %s'%str(e))
+			logging.error('[open url]Unknown error!, %s'%str(e))
 			time.sleep(3)
-
 			#return self.open_url(site)
 
 
@@ -100,8 +116,21 @@ class Crawler_for_Lagou(Format):
 		return a list containg many dicts, each dict store infos of one job 
 		'''
 		#jobinfo_without_detail = []
+		html, proxy = self.open_url(self.url, self.data)
+		html = json.loads(html.decode('utf-8'))
 
-		html = json.loads(self.open_url(self.url, self.data).decode('utf-8'))
+		for i in range(4):
+			if not html.get('content'):
+				#print (proxy)
+				#print (html)
+				time.sleep(2)
+				print ('in the while loop')
+				self._update_proxies(proxy)
+				html, proxy = self.open_url(self.url, self.data)
+				html = json.loads(html.decode('utf-8'))
+			else:
+				break
+
 		for job_json in html['content']["positionResult"]["result"]:
 			single_job_info = {}
 			single_job_info['pub_time'] = job_json.get("createTime")
@@ -118,15 +147,14 @@ class Crawler_for_Lagou(Format):
 			job_already_exist = self.save_raw_info(single_job_info)
 			if job_already_exist:
 				break
-
 		#return jobinfo_without_detail
 
-		
-
 	def job_detail(self, job_id, job_link):
-	
-		x = gzip.GzipFile(fileobj=BytesIO(self.open_url(job_link)))
+		
+		html, proxy = self.open_url(job_link)
+		x = gzip.GzipFile(fileobj=BytesIO(html))
 		html = x.read().decode()
+		#print (html)
 		bs = BeautifulSoup(html, 'html5lib')
 		job_requirement = []
 		job_labels = []

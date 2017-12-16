@@ -171,6 +171,7 @@ class TestResetCode(BaseSuite):
 
 		res = self.client.post(self.url_for('user.reset'),
 				data={'origin':'1', 'new1':'22', 'new2':'22'}, follow_redirects=True)
+		
 		self.assertIn(b'you code has been reseted', res.data)
 
 class TestConfirmMail(BaseSuite):

@@ -11,6 +11,11 @@
 	</div>
 	<div class="col-md-6 text-right text-justify">
 			<h1>This is news section！</h1>
+			{%for message in get_flashed_messages()%}
+				<div class="alert alert-warning container">
+					{{message}}
+				</div>
+			{%endfor%}
 		</div>
 		<div class="col-md-6 img-rounded" style="background-color: white">
 			{%if reg==3%}

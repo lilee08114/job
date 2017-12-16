@@ -1,5 +1,5 @@
-
-from sqlalchemy.ext.declarative import declared_attr
+import logging
+#from sqlalchemy.ext.declarative import declared_attr
 from flask_mail import Message
 from flask import render_template, url_for
 #define the assistant function here
@@ -13,6 +13,7 @@ def send_mail(target_mail, token, name):
 	msg.html = render_template('send_mail.html', link=link, 
 								user=name)
 	mail.send(msg)
+	logging.info('user {}\'s confirm mail has been sent to {}'.format(name, target_mail))
 
 class Assessment():
 	pass
@@ -26,15 +27,15 @@ class CRUD_Model():
 		#in crawler need app_context
 		try:
 			db.session.commit()
-			print ('save {} successfully!'.format(self))
-			print ('--------LOOK THE TABLE ID----------')
-			print (self.id)
-			print ('--------LOOK THE TABLE ID  END----------')
+			logging.info('save {} successfully!'.format(self))
+			#print ('--------LOOK THE TABLE ID----------')
+			#print (self.id)
+			#print ('--------LOOK THE TABLE ID  END----------')
 			return self.id
 		except Exception as e:
 			db.session.rollback()
-			print ('save {} failed!'.format(self))
-			print (str(e))
+			logging.warning('save {} failed!'.format(self))
+			#print (str(e))
 			return False
 
 	def _save(self):
@@ -53,7 +54,7 @@ class CRUD_Model():
 	def _delete(self):
 		db.session.delete(self)
 		db.session.commit()
-		print ('{} has been deleted!'.format(self))
+		logging.warning('{} has been deleted!'.format(self))
 
 	def _update(self, **kwargs):
 

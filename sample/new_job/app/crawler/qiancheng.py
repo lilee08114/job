@@ -36,37 +36,38 @@ class Crawler_for_51job(Format):
 						}
 		handler = request.ProxyHandler(proxy)
 		opener = request.build_opener(handler)
-		return (opener, header)
+		return (opener, header, proxy)
 
 	def open_url(self, site):
-		opener, header = self.get_proxy()
+		logging.info('[open url]URL is: {}'.format(site))
+		opener, header, proxy = self.get_proxy()
 		req = request.Request(site, headers=header)
 		try:
 			with opener.open(req, timeout=self.timeout) as f:
-				return f.read()
+				return (f.read(), proxy)
 		except HTTPError as e:
-			print ('QC HTTPError, %s'%e.code)
+			logging.warning('[open url]QC HTTPError, %s'%e.code)
 			#this proxy ip need to be marked in db 
 			#self.proxy_obj.remove(temp)
 			time.sleep(1)
 			return self.open_url(site)
 		except URLError as e:
-			print ('URLError!, %s'%e.reason)
+			logging.warning('[open url]URLError!, %s'%e.reason)
+			print (proxy)
 			time.sleep(1)
 			return self.open_url(site)
 		except Exception as e:
-			print ('Unknown error!, %s'%str(e))
+			logging.error('[open url]Unknown error!, %s'%str(e))
 			time.sleep(3)
 			return self.open_url(site)
 
 	def job_list(self):
 
-		html = self.open_url(self.url)
+		html, proxy = self.open_url(self.url)
 		bs = BeautifulSoup(html, 'html5lib')
 		result_list = bs.find(attrs={'id':'resultList'})
-
 		while not bool(result_list):
-			html = self.open_url(self.url)
+			html, proxy = self.open_url(self.url)
 			bs = BeautifulSoup(html, 'html5lib')
 			result_list = bs.find(attrs={'id':'resultList'})
 
@@ -99,7 +100,7 @@ class Crawler_for_51job(Format):
 		'''
 		#time.sleep(3)
 		#logging.info('Searching QC DETL: key: %s, link: %s'%(jobInfo['key'], jobInfo['link']))
-		html = self.open_url(job_link)
+		html, proxy = self.open_url(job_link)
 		#print (html)
 		bs = BeautifulSoup(html, 'html5lib')
 	

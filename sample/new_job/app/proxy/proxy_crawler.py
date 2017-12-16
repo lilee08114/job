@@ -1,4 +1,5 @@
 import re
+import logging
 from bs4 import BeautifulSoup
 from urllib import request
 from flask import current_app
@@ -49,6 +50,8 @@ class GetIps():
 				ip, port, security, scheme = i
 				new_ip = Ip_pool(ip=ip, port=port, security=security, scheme=scheme)
 				new_ip._save()
+
+
 
 	def _parse_tr_tag(self, tr_tag):
 		ip_addr = re.search('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', tr_tag)
@@ -101,13 +104,13 @@ class GetIps():
 		try:
 			print (opener.open(req, timeout=self.timeout).getcode())
 		except HTTPError as e:
-			print ('-HTTPError, %s'%e.code)
+			logging.warning('[confirm proxy]HTTPError, %s'%e.code)
 			proxy_obj._delete()
 		except URLError as e:
-			print ('-URLError, %s'%e.reason)
+			logging.warning('[confirm proxy]URLError, %s'%e.reason)
 			proxy_obj._delete()
-		except:
-			print ('-bad request!')
+		except Exception as e:
+			logging.error('[confirm proxy]bad request! %s'%str(e))
 			#return False
 
 	def check(self):

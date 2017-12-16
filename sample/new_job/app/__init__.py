@@ -1,3 +1,4 @@
+import logging
 from flask import Flask
 from flask_login import LoginManager
 from app.model import User, Company
@@ -6,19 +7,11 @@ from app.extensions import db, ce, login_manager, mail
 import pdb
 
 def create_app(config=None):
-
+	logging.debug('Server start!')
 	app = Flask(__name__)
 
-	#if config is None:
-	#	app.config.from_pyfile('config.py') 
-	#else:
-	#	app.config.update(config)
-	'''
-	if config == 'production':
-		app.config.from_object('config.Production')
-	elif config == 'test':
-		app.config.from_object('config.Development')
-	'''
+	logging.basicConfig(filename='just.log',level=logging.INFO, 
+						format='[%(asctime)s]-%(levelname)s-%(message)s')
 	if config is None:
 		app.config.from_object('config.Production')
 	else:
@@ -45,7 +38,6 @@ def register_routes(app):
 def register_mail(app):
 	mail.init_app(app)
 	return app
-
 
 def register_db(app):
 	db.app = app

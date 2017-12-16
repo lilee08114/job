@@ -56,7 +56,6 @@ class TestForumPage(BaseSuite):
 		
 		with self.client as c:
 			self.prepare_post()
-			print ('-------test article {}----'.format(current_user))
 	
 			res = c.get(self.url_for('forum.post', post_id=1))
 			self.assertIn(b'this is post 1', res.data)

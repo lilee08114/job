@@ -16,10 +16,10 @@ class TestHomePage(BaseSuite):
 			self.assertIn(b'must be Chinese or English letters', res.data)
 
 		res = self.client.get(self.url_for('front.home', key_word=' '))
-		self.assertIn(b'A key word is needed!'. res.data)
+		self.assertIn(b'A key word is needed!', res.data)
 
 	def test_new_key(self):
-		res = self.client.get(self.url_for('front.home', key_word='total new'))
+		res = self.client.get(self.url_for('front.home', key_word='totalnew'))
 		self.assertIn(b'Sorry! This is a new word', res.data)
 
 	def test_job_list(self):

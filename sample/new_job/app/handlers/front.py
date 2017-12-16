@@ -15,11 +15,11 @@ def home():
     key = request.args.get('key_word')
     page = int(request.args.get('page', 1))
     if key is not None:
-        if not bool(re.search('^[a-zA-Z\u4e00-\u9fa5]+$', key)):
-            flash('must be Chinese or English letters only')
-            return render_template('home.html')
-        elif key.strip() is '':
+        if key.strip() is '':
             flash('A key word is needed!')
+            return render_template('home.html') 
+        elif not bool(re.search('^[a-zA-Z\u4e00-\u9fa5]+$', key)):
+            flash('must be Chinese or English letters only')
             return render_template('home.html')
         else:
             jobs = Jobbrief.query.filter_by(key_word=key)      

@@ -52,7 +52,7 @@ class Crawler_for_Liepin(Format):
 		'''open the given site with the proxy opener and header
 		if the response status code is 403, mark it in database and retry with other proxy ip
 		'''
-		print ('---open: %s-----'%site)
+		logging.info('[open url]URL is: {}'.format(site))
 		opener, header = self.get_proxy()
 		req = request.Request(site, headers=header)
 		try:
@@ -60,17 +60,17 @@ class Crawler_for_Liepin(Format):
 				x = gzip.GzipFile(fileobj=BytesIO(f.read()))
 			return x.read().decode()
 		except HTTPError as e:
-				print ('LP HTTPError %s'%(e.code))
+				logging.warning('[open url]LP HTTPError %s'%(e.code))
 				#this proxy ip need to be marked in db 
 				#self.proxy_obj.remove(temp)
 				time.sleep(1)
 				return self.open_url(site)
 		except URLError as e:
-			print ('URLError! %s'%e.reason)
+			logging.warning('[open url]URLError! %s'%e.reason)
 			time.sleep(1)
 			return self.open_url(site)
 		except Exception as e:
-			print ('Unknown error!, %s'%str(e))
+			logging.error('[open url]Unknown error!, %s'%str(e))
 			time.sleep(3)
 			return self.open_url(site)
 
