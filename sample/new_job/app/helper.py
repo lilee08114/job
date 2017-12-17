@@ -28,9 +28,9 @@ class CRUD_Model():
 		try:
 			db.session.commit()
 			logging.info('save {} successfully!'.format(self))
-			#print ('--------LOOK THE TABLE ID----------')
-			#print (self.id)
-			#print ('--------LOOK THE TABLE ID  END----------')
+			print ('--------LOOK THE TABLE ID----------')
+			print (self.id)
+			print ('--------LOOK THE TABLE ID  END----------')
 			return self.id
 		except Exception as e:
 			db.session.rollback()

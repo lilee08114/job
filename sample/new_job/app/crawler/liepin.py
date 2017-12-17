@@ -9,31 +9,26 @@ from bs4 import BeautifulSoup
 from app.model import User, Jobbrief
 from . import Format
 
+#####################################
+#crawler for liepin.com
+#####################################
 
 class Crawler_for_Liepin(Format):
 	
 	def __init__(self, url, proxy, key):
+		'''open the given url, parse the html content, save the job, then open job site and save it
+
+		url: string, the url that will be visited
+		key: string, which keyword's info you want to get
+		proxy: list, contains 30 proxy ip addresses in dict format
+		'''
 		self.keyword = key
 		self.url = url
 		self.timeout = 10
 		self.proxy_obj = proxy
-		'''
-		self.header = {'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-						'Accept-Encoding':'gzip, deflate, br',
-						'Accept-Language':'zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4',
-						'Cache-Control':'max-age=0',
-						'Connection':'keep-alive',
-						'Cookie':'gr_user_id=6b586e66-717d-4278-a73f-faa25825b1d1; __uuid=1501212420310.14; _uuid=873BADACFFA8440C4C60DB89EE03D36A; _fecdn_=1; slide_guide_home=1; JSESSIONID=78D969B17C23427D97202447C1E90DE4; abtest=0; __tlog=1503294086561.02%7C00000000%7CR000000075%7C00000000%7C00000000; __session_seq=16; __uv_seq=13; Hm_lvt_a2647413544f5a04f00da7eee0d5e200=1501212421,1501908343,1503294087; Hm_lpvt_a2647413544f5a04f00da7eee0d5e200=1503367763; _mscid=00000000; gr_session_id_bad1b2d9162fab1f80dde1897f7a2972=a0b1a522-6d65-4eb6-ae07-12e291d7878a',
-						'Host':'www.liepin.com',
-						'Referer':'https://www.liepin.com/zhaopin/',
-						'Upgrade-Insecure-Requests':1,
-						'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36'
-						}
-		'''
+
 	def get_proxy(self):
-		'''pick a proxy ip randomly from 10 proxy ip addresses
-		and construct the header with random User-Agent
-		retutn: tuple with proxy opener and header
+		'''pick one proxy ips randomly, build the request header, build the proxy opener
 		'''
 		user_agent, proxy = random.choice(self.proxy_obj)
 		header = {'User-Agent':user_agent,
@@ -76,8 +71,6 @@ class Crawler_for_Liepin(Format):
 
 	def job_list(self):
 		'''get the job list, parse the job-relative info, and save it into db
-
-		return a list that including many dicts, each dicts stores a job's rough info
 		'''
 		#information = []
 		html = self.open_url(self.url)
@@ -97,18 +90,13 @@ class Crawler_for_Liepin(Format):
 			#print (job_tag)
 			job_info['company_name'] = str(job_tag.find('p', class_='company-name').find('a').string)
 			job_info['company_site'] = job_tag.find('p', class_='company-name').find('a').get('href')
-			
-			#job_info['company_site'] = job_tag.find('p', class_='company-name').find('a')['href']
-			#information.append(job_info)
-			job_already_exist = self.save_raw_info(job_info)
-			if job_already_exist:
-				break
 
-		#print ('Liepin\'s search page has been parsed')
-		#return information
+			job_already_exist = self.save_raw_info(job_info)
+			if job_already_exist:				# if found a repeated job, stop proceeding
+				break
 	
 	def check_link(self, link):
-		#check the validity of the link
+		'''transfer the link from relative into absolute url'''
 		host = 'https://www.liepin.com'
 		path = link
 		if host in path:
@@ -117,10 +105,9 @@ class Crawler_for_Liepin(Format):
 			return parse.urljoin(host, path)
 
 	def job_detail(self, job_id, job_link):
-		'''base on the given job links, save the detail requirments it into db
+		'''open the given job links, save the detail requirments it into db
 
-		param:
-		job_id: job's raw info id
+		job_id: integer, job's database row id
 		job_link: job's detail info link
 		'''
 		job_requirement = []
@@ -145,15 +132,5 @@ class Crawler_for_Liepin(Format):
 		labels = self.extract_labels(requirement)
 		job._update(job_labels=', '.join(labels))
 		return
-'''
-url = 'https://www.liepin.com/zhaopin?pubTime=3&dqs=280020&salary=10$15&compscale=&key=Python'
-outurl = r'C:\works\crawler\liepin.txt'
-a = Crawler_for_Liepin(url)
-print (a)
-print ('start:...')
-p = str(a.jobDetail())	
-with open(outurl, 'a', encoding='utf-8', errors='ignore') as c:
-	c.write(p) 	
-print ('end!')
-'''
+
 		

@@ -1,9 +1,7 @@
 import logging
 import random
 from urllib.parse import quote
-#约定：发布时间选项为：None, 24  72
-#约定：工资有None, ‘3K以下’，‘3k-6k’，‘6k-10k’，‘10k以上’
-#约定：经验要求：None,‘无要求’，‘1-3年’，‘3年以上’
+
 #################################################################
 #this module is to generate the url base on the given criterion
 #such as city, key word, salary and etc.
@@ -17,6 +15,12 @@ class Links():
 		'''this is not fully implemented for now, only keyword must be provided
 		
 		keyword: string, the keyword that will be searched
+		exp: string, must be one of the [None,‘无要求’，‘1-3年’，‘3年以上’]
+		edu:
+		page: integer, the page number, default to 1
+		city: string, the city
+		salary: string, must be one of the [None, ‘3K以下’，‘3k-6k’，‘6k-10k’，‘10k以上’]
+		pub_time: string, must be one of the [None, 24  72]
 		'''
 		self.keyword = keyword
 		self.exp = exp

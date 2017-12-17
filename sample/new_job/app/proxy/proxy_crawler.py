@@ -7,10 +7,14 @@ from app.model import Ip_pool
 from app.extensions import db
 from app.extensions import ce
 
+#####################################
+#this module provide proxy ip crawler
+#####################################
+
 class GetIps():
-	#这个模块作用是接受fresh命令，get ip proxy from website!
+	
 	def __init__(self):
-		#timeout: timeout parameter for urlopen, only for validate_ip method
+		'''this class will crawl proxies from few websites '''
 		self.url1 = 'http://www.xicidaili.com/'
 		self.url2 = 'http://www.ip181.com/'
 		self.url3 = ' http://www.data5u.com/'
@@ -19,13 +23,13 @@ class GetIps():
 		self.url7 = 'http://www.xdaili.cn/ipagent/freeip/getFreeIps?page=1&rows=10'
 		self.test_url = 'http://www.baidu.com/'
 		self.timeout = 10
-		self.header={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-			AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
+		self.header={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
 			'Referer':'https://www.google.com/'
 			}
 		self.ip_pool = []
 
 	def _open_url(self, url):
+		'''open the url'''
 		req = request.Request(self.url1, headers=self.header)
 		with request.urlopen(req) as f:
 			try:
@@ -35,25 +39,27 @@ class GetIps():
 		return html
 
 	def _validate_ip(self, ip_obj):
-		#visit a test_url to check whether a proxy ip is alive
+		''' if the given ip_obj is high anonymous, return True, otherwise return False'''
 		ip, port, security, scheme = ip_obj
 		if security == '透明':
 			return False
 		return True
 
 	def save(self):
-		#write the ip addresses into db.
+		''' save the ip into db'''
 		from app import app
 		with app.app_context():
-			#db.create_all()
 			for i in self.ip_pool:
 				ip, port, security, scheme = i
 				new_ip = Ip_pool(ip=ip, port=port, security=security, scheme=scheme)
 				new_ip._save()
 
-
-
 	def _parse_tr_tag(self, tr_tag):
+		''' parse the proxy ip components from given html fragment 
+
+		tr_tag: string, html fragment contains the proxy ip
+		return: tuple, contains scheme, anonymous, ip and port
+		'''
 		ip_addr = re.search('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', tr_tag)
 		if bool(ip_addr):
 			port_ = re.search('<td>(\d{1,5})<\/td>', tr_tag)
@@ -64,7 +70,7 @@ class GetIps():
 
 
 	def _xicidaili_ip(self):
-		#get ip from xicidaili.com!	
+		'''open the xicidaili.com, and extract proxy ips, and save it into db'''
 		html = self._open_url(self.url1)
 		bs = BeautifulSoup(html, 'html5lib')
 		for i in bs.find_all('tr', class_='subtitle'):
@@ -78,6 +84,7 @@ class GetIps():
 		self.save()
 
 	def _ip181_ip(self):
+		'''open the ip181.com, and extract proxy ips, and save it into db'''
 		html = self._open_url(self.url2)
 		bs = BeautifulSoup(html, 'html5lib')
 
@@ -95,14 +102,16 @@ class GetIps():
 		
 	@ce.task(queue='check')
 	def _check(self, proxy_obj):
-		#pk: proxy pk in database
-		#proxy_ip: proxy like 'http://117.65.35.123:55555'.
-		proxy = {'http://':proxy_obj.scheme+proxy_obj.ip+':'+proxy_obj.port}
+		'''check whether a proxy ip is still available, by sending HEAD method request to www.baidu.com
+			if fail to connect to baidu, then delete the ip from database
+		'''
+		proxy = {'http://':proxy_obj.ip+':'+proxy_obj.port}
 		handler = request.ProxyHandler(proxy)
 		opener = request.build_opener(handler)
 		req = request.Request(self.test_url, headers=self.header, method='HEAD')
+
 		try:
-			print (opener.open(req, timeout=self.timeout).getcode())
+			opener.open(req, timeout=self.timeout).getcode()
 		except HTTPError as e:
 			logging.warning('[confirm proxy]HTTPError, %s'%e.code)
 			proxy_obj._delete()
@@ -114,7 +123,7 @@ class GetIps():
 			#return False
 
 	def check(self):
-		#这里可以添加更多的筛选条件
+		'''get all proxies, and check each of them'''
 		proxies = Ip_pool.query.all()
 		for proxy in proxies:
 			#self._check.apply_async((proxy,))
@@ -122,8 +131,8 @@ class GetIps():
 			#break
 
 	def fresh_ip(self, check=True):
-		#exposed api??
-		#here need more proxy searching logic
+		'''crawler is started here, if 'check' is True, all proxy ips will be checked
+		whether available'''
 		self._xicidaili_ip()
 		self._ip181_ip()
 		if check:

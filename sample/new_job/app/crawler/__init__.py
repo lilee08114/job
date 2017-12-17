@@ -181,7 +181,7 @@ class Format():
 						jobinfo['job_name'], jobinfo['pub_time'])	
 
 		if check == 'end': 			#no more new job, stop searching		
-			return True
+			return False			#chekc????  return True	
 		elif check == 'repeated job':		#this is a repeated job, just save jobsite
 			job_id = Jobbrief.query.filter_by(job_name=jobinfo['job_name'], 
 				job_salary_low=jobinfo['salary'][0], job_salary_high=jobinfo['salary'][1]).\

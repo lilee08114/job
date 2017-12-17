@@ -12,16 +12,19 @@ from bs4 import BeautifulSoup
 from app.model import  User, Jobbrief
 from . import Format
 
+#####################################
+#crawler for lagou.com
+#####################################
+
 class Crawler_for_Lagou(Format):
 
 	def __init__(self, url, proxy, keyword, page=1):
-		'''on lagou site, the keyword should be posted to its host rather than
-		through url
+		'''open the url, parse the html content, save the job, then open job site and save it
 
-		url: the url that will be visit
-		page: which page on that url to visit
-		keyword: which keyword's info you want to get
-		proxy: 10 proxy ip addresses
+		url: string, the url that will be visited
+		page: integer, which page on that url to visit,default to 1
+		keyword: string, which keyword's info you want to get
+		proxy: list, contains 30 proxy ip addresses in dict format
 		'''
 		self.keyword = keyword
 		self.url = url
@@ -39,20 +42,12 @@ class Crawler_for_Lagou(Format):
 		'''
 
 	def get_proxy(self):
-		'''pick a proxy ip randomly from 10 proxy ip addresses
-		and construct the header with random User-Agent
-		retutn: tuple with proxy opener and header, and the index number of the proxy in the proxy_obj
+		'''pick one proxy ips randomly, build the request header, build the proxy opener
 		'''
 		user_agent, proxy = random.choice(self.proxy_obj)
 		handler = request.ProxyHandler(proxy)
 		opener = request.build_opener(handler)
 		header = {'User-Agent':user_agent,
-					#'Accept-Encoding':'gzip, deflate, br',
-					#'Referer':'https://www.lagou.com/jobs/',
-					#'Host':'www.lagou.com',
-					#'Origin':'https://www.lagou.com',
-					#'Accept':'application/json, text/javascript, */*; q=0.01',
-					#'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8',
 					'Accept-Encoding':'gzip, deflate, br',
 				'Referer':'https://www.lagou.com/jobs/list_python?px=default&city=%E6%88%90%E9%83%BD',
 				'Host':'www.lagou.com',
@@ -61,12 +56,10 @@ class Crawler_for_Lagou(Format):
 				'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8',
 				'X-Requested-With':'XMLHttpRequest'
 					}
-		
 		return (opener, header, proxy)
 
 	def _switch_scheme(self, proxy):
-		#switch the proxy ip scheme between http and https
-		#更新当前选中的proxy的scheme！
+		'''switch the proxy ip scheme between 'http' and 'https' '''
 		for k, v in proxy.items():
 			new_k = 'https' if k=='http' else 'http'
 		proxy[new_k] = v
@@ -74,7 +67,8 @@ class Crawler_for_Lagou(Format):
 		return proxy
 
 	def _update_proxies(self, origin_proxy):
-		for i in enumerate(self.proxy_obj[:]):
+		'''swith the given origin_proxy's scheme'''
+		for i in enumerate(self.proxy_obj):
 			k, v = i
 			header, proxy = v
 			if origin_proxy == proxy:
@@ -82,9 +76,8 @@ class Crawler_for_Lagou(Format):
 				self.proxy_obj[k] = (header, new_proxy)
 
 	def open_url(self, site, data=None):
-		'''open the given site with the proxy opener and header.
-		add HTTPError handling logic here!
-		'''
+		'''open the given url with proxy opener, if fail, keep retrying'''
+
 		count = 3				#if fails to open the url, just retry 3 times, not infinitely
 		opener, header, proxy = self.get_proxy()
 		req = request.Request(site, data, headers=header)
@@ -108,12 +101,11 @@ class Crawler_for_Lagou(Format):
 		except Exception as e:
 			logging.error('[open url]Unknown error!, %s'%str(e))
 			time.sleep(3)
-			#return self.open_url(site)
+			return self.open_url(site)
 
 
 	def job_list(self):
-		'''fetch the jon list, and parse and save rough infos about each job.
-		return a list containg many dicts, each dict store infos of one job 
+		'''get the html content, extract and save job information
 		'''
 		#jobinfo_without_detail = []
 		html, proxy = self.open_url(self.url, self.data)
@@ -121,8 +113,6 @@ class Crawler_for_Lagou(Format):
 
 		for i in range(4):
 			if not html.get('content'):
-				#print (proxy)
-				#print (html)
 				time.sleep(2)
 				print ('in the while loop')
 				self._update_proxies(proxy)
@@ -145,12 +135,16 @@ class Crawler_for_Lagou(Format):
 	
 			#jobinfo_without_detail.append(single_job_info)
 			job_already_exist = self.save_raw_info(single_job_info)
-			if job_already_exist:
+			if job_already_exist:					#if found a repeated job, stop proceeding
 				break
 		#return jobinfo_without_detail
 
 	def job_detail(self, job_id, job_link):
+		'''open the given job_link, extract and save the job's detail
 		
+		job_id: integer, the job's database raw id
+		job_link: string
+		 '''
 		html, proxy = self.open_url(job_link)
 		x = gzip.GzipFile(fileobj=BytesIO(html))
 		html = x.read().decode()
